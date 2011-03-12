@@ -10,7 +10,7 @@ dnl the first two used for API
 dnl the last one for bugfixes only
 m4_define([proj_major_version], [1])
 m4_define([proj_minor_version], [0])
-m4_define([proj_micro_version], [0beta])
+m4_define([proj_micro_version], [0beta-python3])
 
 m4_define([proj_version], [proj_major_version.proj_minor_version.proj_micro_version])
 
@@ -35,7 +35,7 @@ dnl AM_CONFIG_HEADER(config.h)
 
 AM_INIT_AUTOMAKE(no-define)
 
-AM_PATH_PYTHON([2.6])
+AM_PATH_PYTHON([3.0])
 
 AM_MAINTAINER_MODE
 

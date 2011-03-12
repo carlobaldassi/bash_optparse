@@ -25,7 +25,7 @@ do
 done
 
 
-AUX_FUNCS="$(python -B $py_script_name)"
+AUX_FUNCS="$(python3 -B $py_script_name)"
 [[ $? -eq 0 ]] || exit 1
 
 if [[ "$BOP_LOCAL_INSPECT" == "true" ]]

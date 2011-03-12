@@ -174,7 +174,7 @@ class BopOption(object):
 		if self.default_arg != None:
 			try:
 				if self.arg_type == "INT":
-					def_val = long(self.default_arg)
+					def_val = int(self.default_arg)
 				elif self.arg_type == "FLOAT":
 					def_val = float(self.default_arg)
 			except ValueError:
@@ -214,7 +214,7 @@ class BopOption(object):
 
 			for i in range(len(self.arg_range)):
 				self.arg_range[i] == check.is_empty_or_none(self.arg_range[i])
-				if isinstance(self.arg_range[i], int) or isinstance(self.arg_range[i], long):
+				if isinstance(self.arg_range[i], int):
 					self.arg_range[i] = float(self.arg_range[i])
 				test(check.is_float_or_none(self.arg_range[i]), err.InvalidFloatRange, (cnt, self.arg_range))
 
