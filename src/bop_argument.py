@@ -39,7 +39,7 @@ class BopArgument(object):
 		mandatory = mandatory.capitalize()
 
 		try:
-			exec "self.mandatory = " + mandatory
+			exec("self.mandatory = " + mandatory)
 		except (NameError, SyntaxError):
 			raise err.NotBoolean(cnt, mandatory)
 		self.arg_name = str(arg_name)
@@ -62,7 +62,7 @@ class BopVararg(object):
 		self.settings = settings
 		mandatory = mandatory.capitalize()
 		try:
-			exec "self.mandatory = " + mandatory
+			exec("self.mandatory = " + mandatory)
 		except (NameError, SyntaxError):
 			raise err.NotBoolean(cnt, mandatory)
 		self.arg_name = str(arg_name)

@@ -99,7 +99,7 @@ class BopOption(object):
 				ar[i] = None
 			else:
 				try:
-					exec "ar[i] = " + ar[i]
+					exec("ar[i] = " + ar[i])
 				except (NameError, SyntaxError):
 					raise range_error(cnt, self.arg_range)
 		self.arg_range = ar
@@ -120,7 +120,7 @@ class BopOption(object):
 	def parse_string_range(self, cnt):
 		range_error = err.InvalidStringRange
 		try:
-			exec "self.arg_range = " + self.arg_range
+			exec("self.arg_range = " + self.arg_range)
 		except (NameError, SyntaxError):
 			try:
 				self.arg_range = str(self.arg_range)

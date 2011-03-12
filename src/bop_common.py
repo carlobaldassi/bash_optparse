@@ -23,7 +23,7 @@ def test(stmt, exc_class, exc_args):
 	Raise an exception if statement is false.
 	"""
 	if not stmt:
-		raise exc_class, exc_args
+		raise exc_class(*exc_args)
 
 
 option_line_required_args = 6
