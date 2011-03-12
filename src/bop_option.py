@@ -54,6 +54,8 @@ class BopOption(object):
 		test(self.name != "help", err.ReservedName, (cnt, self.name))
 		test(self.name != "version", err.ReservedName, (cnt, self.name))
 
+		self.arg_type = self.arg_type.upper()
+
 		if self.arg_type == "INT":
 			self.parse_type_int(cnt)
 		elif self.arg_type == "FLOAT":

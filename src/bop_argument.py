@@ -36,12 +36,13 @@ class BopArgument(object):
 	def __init__(self, cnt, settings, name, mandatory, arg_name):
 		self.settings = settings
 		self.name = str(name)
+		mandatory = mandatory.capitalize()
+
 		try:
 			exec "self.mandatory = " + mandatory
 		except (NameError, SyntaxError):
 			raise err.NotBoolean(cnt, mandatory)
 		self.arg_name = str(arg_name)
-
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
 		test(isinstance(self.mandatory, bool), err.NotBoolean, (cnt, self.mandatory))
 		test(check.optarg_name(self.arg_name), err.InvalidArgName, (cnt, self.arg_name))
@@ -59,6 +60,7 @@ class BopVararg(object):
 	required_args = vararg_line_required_args
 	def __init__(self, cnt, settings, mandatory, arg_name):
 		self.settings = settings
+		mandatory = mandatory.capitalize()
 		try:
 			exec "self.mandatory = " + mandatory
 		except (NameError, SyntaxError):

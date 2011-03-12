@@ -57,7 +57,10 @@ class Parser(object):
 			cnt.line = l
 			line = opt_reader.parse_line(cnt, l)
 			cnt.line = line
-			if len(line) == 0 or line[0] == "COMMENT" or line[0] == "#":
+			if len(line) == 0:
+				continue;
+			line[0] = line[0].upper()
+			if line[0] == "COMMENT" or line[0] == "#":
 				continue;
 			if line[0] == "DESCRIPTION":
 				test(len(line) == 2, err.InvalidDescLine, (cnt, len(line)))
