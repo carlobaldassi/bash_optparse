@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# This script is a wrapper to the python script
+# of the same name.
+# It should be sourced, not executed.
+# It reads the options/args description from stdin
+# and outputs a script which parses the command
+# line and performs some automatic checks.
+
+# This wraps the local version of the script
+# rather than the installed one, for debugging
+# purposes.
+# It also allows to optionally inspect the
+# generated script.
+
+export PYTHONPATH="../src:../build/src:$PYTHONPATH"
+
+py_script_name="../src/bash_optparse.py"
+
+[[ -f "$py_script_name" ]] || { echo "$(basename $0): error: python script $py_script_name not found" >> /dev/stderr; exit 1; }
+
+for req_command in getopt egrep gawk
+do
+	which "$req_command" &> /dev/null || { echo "$(basename $0): error: $req_command command not found" >> /dev/stderr; exit 1; }
+done
+
+
+AUX_FUNCS="$(python -B $py_script_name)"
+[[ $? -eq 0 ]] || exit 1
+
+if [[ "$BOP_LOCAL_INSPECT" == "true" ]]
+then
+	echo "$AUX_FUNCS"
+	exit 0
+fi
+
+. <(echo "$AUX_FUNCS")
+
+unset AUX_FUNCS

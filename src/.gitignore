@@ -1,0 +1,4 @@
+*.pyc
+bash_optparse
+Makefile
+Makefile.in

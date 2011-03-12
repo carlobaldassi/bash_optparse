@@ -1,0 +1,8 @@
+*.sw[po]
+configure
+config.log
+config.status
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache

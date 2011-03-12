@@ -1,0 +1,40 @@
+BASH OPTPARSE
+an advanced command line
+parsing system for Bash
+========================
+
+Copyright (C) 2011 Carlo Baldassi <carlobaldassi@gmail.com>
+
+
+This program brings into bash a method for parsing the
+command line which is somehow similar in spirit to python's
+optparse, or boost::program_options or others, i.e. it
+provides a framework in which the program options and
+arguments are described in a compact format and passed to
+bash_optparse, which in turn produces a portion of bash
+script which performs the parsing, sets default values,
+implements dynamic checks for type and range of the
+variables, auto-generates a nicely formatted usage()
+function etc.
+
+The typical usage in a script could be something like this:
+
+. bash_optparse << EOF
+OPTION, perc, FLOAT, p, [0:100], 50, "Select percentage"
+ARGUMENT, infile, False, "input file"
+EOF
+
+The OPTION line in the example describes an option named
+--perc, associated to a varaible of the same name, of type
+FLOAT, whose range is between 0 and 100, and which defaults
+to 50. The corresponding help line in the usage output would
+be:
+
+  --perc <p>  Select percentage (<p>=float in [0.0:100.0],
+              default=50.0)
+
+The ARGUMENT line describes how to pass an optional argument,
+which will be stored in the variable $infile.
+
+See the example script and the detailed syntax description
+in the doc directory for more information.

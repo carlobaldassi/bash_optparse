@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export BOP_LOCAL_INSPECT="true"
+
+"$@"
+
