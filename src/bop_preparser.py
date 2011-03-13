@@ -28,75 +28,57 @@ class LinePreParser(object):
 	whitespace.
 	"""
 	def __init__(self):
-		self.sep_char = ','
+		self.comment_char = '#'
 		self.quote_char = '"'
 		self.escape_char = '\\'
 		pass
 	def parse_line(self, cnt, line):
 		ret = []
 		curr_strl = []
-		ind = 0
 		in_quote = False
 		in_escape = False
-		quote_inds = []
+		in_between = True
 		#sys.stderr.write("INPUT LINE: <" + repr(line) + ">\n")
 		if line[-1:] != "\n":
 			line = line + "\n"
 		if len(line) == 1:
 			return []
-		for i, c in enumerate(line):
-			#sys.stderr.write("i=" + str(i) + " c=<" + str(c) + ">\n")
-			if (c == self.sep_char or c == "\n") and not in_quote and not in_escape:
-				first_char = 0
-				last_char = len(curr_strl) - 1
-				first_quote_ind = None
-				last_quote_ind = None
-				for q in quote_inds:
-					if q[0] != q[1]:
-						if first_quote_ind == None:
-							first_quote_ind = q[0]
-						last_quote_ind = q[1]
-				if first_quote_ind != None:
-					while curr_strl[first_char].isspace() and first_char < first_quote_ind and first_char < last_char:
-						first_char += 1
-				else:
-					while curr_strl[first_char].isspace() and first_char < last_char:
-						first_char += 1
-				if last_quote_ind != None:
-					while curr_strl[last_char].isspace() and last_char >= last_quote_ind and last_char >= first_char:
-						last_char -= 1
-				else:
-					while curr_strl[last_char].isspace() and last_char >= first_char:
-						last_char -= 1
 
-				#sys.stderr.write("fqi=" + str(first_quote_ind) + " lqi=" + str(last_quote_ind) + "\n")
-				#sys.stderr.write("first=" + str(first_char) + " last=" + str(last_char) + "\n")
-				#sys.stderr.write("TOKEN: <" + "".join(curr_strl[first_char:last_char + 1]) + ">\n")
-				ret.append("".join(curr_strl[first_char:last_char + 1]))
+		i = 0;
+		while i < len(line) and line[i].isspace():
+			i += 1
+		if i == len(line):
+			return []
+		line = line[i:]
+
+		for c in line:
+			#sys.stderr.write("i=" + str(i) + " c=<" + str(c) + ">\n")
+			if c.isspace() and not in_quote and not in_escape and not in_between:
+				ret.append("".join(curr_strl))
 				curr_strl = []
-				ind = 0
-				in_quote = False
-				in_escape = False
-				quote_inds = []
+				in_between = True
+			elif c.isspace() and not in_quote and not in_escape and in_between:
+				pass
+			elif c == self.comment_char and in_between:
+				if len(curr_strl) > 0:
+					ret.append("".join(curr_strl))
+				curr_strl = []
+				break
 			elif c == "\n" and (in_quote or in_escape):
 				raise err.QuotedNewline(cnt, "")
 			elif c == self.quote_char and not in_quote and not in_escape:
 				in_quote = True
-				#if first_quote_ind == None:
-					#first_quote_ind = ind
-				quote_inds.append([ind, None])
+				in_between = False
 			elif c == self.quote_char and in_quote and not in_escape:
 				in_quote = False
-				assert quote_inds[-1][1] == None, "WAT"
-				quote_inds[-1][1] = ind
-				#last_quote_ind = ind
-
+				assert in_between == False, "WAT (bug)"
 			elif c == self.escape_char and not in_escape:
 				in_escape = True
+				in_between = False
 			else:
 				#sys.stderr.write("  -> ind=" + str(ind) + " c=<" + str(c) + ">\n")
 				curr_strl.append(c)
 				in_escape = False
-				ind += 1
+				in_between = False
 		return ret
 
