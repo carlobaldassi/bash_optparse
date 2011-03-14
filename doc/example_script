@@ -34,7 +34,7 @@ SCRIPT_VERSION="0.0"
 #   4) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
 #      of the block. It is safer to follow the order of blocks presented here, even if it is
 #      not strict. Indentation in blocks is not required, but helps readability.
-#   5) Keywords like NONE, INT, FLOAT, STRING, INF, settings names and block_delimiters are
+#   5) Keywords like NONE, INT, FLOAT, STRING, INF, VARARGS, settings names and block_delimiters are
 #      case-insensitive (but using all-uppercase avoids confusion most of the times).
 #   6) Lines can be continued by terminating them with a backslash. Comments can be continued in
 #      this way, as well.
@@ -42,7 +42,7 @@ SCRIPT_VERSION="0.0"
 SETTINGS_BEGIN
 
   # These settings control the global behaviour of bash_optparse.
-  # All possible settings are shown here.
+  # All currently available settings are shown here.
 
   REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking)
   WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
@@ -109,7 +109,7 @@ OPTIONS_BEGIN
   flag_option     NONE   NONE   NONE            NONE        "A flag"
 
 # notes about OPTION lines:
-#   1) The variable name is also used as the option name, but underscores
+#   1) The variable name is also used as the long option name, but underscores
 #      are replaced by dashes. Only alphanumeric character and underscores
 #      are allowed in names. The first letter cannot be a digit.
 #   2) There are 4 argument types: STRING, INT, FLOAT and NONE. The first
@@ -141,7 +141,7 @@ OPTIONS_END
 
 ARGUMENTS_BEGIN
 
-# This block is used to describe the named arguments to the script.
+# This block is used to describe the arguments to the script.
 #
 # synopsis of ARGUMENT lines:
 #
@@ -151,30 +151,23 @@ ARGUMENTS_BEGIN
   first_arg  True      "mandatory argument"
   second_arg False     "optional argument"
   third_arg  False     "another optional argument"
+  @          False     "extra optional args"
 
 # notes about ARGUMENT lines:
-#   1) The names follow the same rules as those for options
-#   2) Once an optional argument is given, all other arguments
-#      and VARARGs (see below) must also be optional.
+#   1) The names follow the same rules as those for options, except that
+#      *) help and version are not reserved
+#      *) VARARGS (case insensitive) has a special meaning
+#      *) @ is allowed, as a synonim to VARARGS
+#   2) Once an optional argument is given, all following arguments
+#      (and VARARGS) must also be optional.
+#   3) The name in the last line may be "VARARGS" or "@", in which case
+#      it will describe all the remaining arguments, which will go in
+#      the special bash variable "@".
+#   4) Tip: use optional VARARGS if you want to disable the
+#      strict check about the number of arguments supplied
 
 ARGUMENTS_END
 
-VARARGS_BEGIN
-
-# synopsis of VARARG line:
-#
-# IS        ARG
-# MANDATORY NAME
-
-  False     "extra optional args"
-
-# notes about VARARG lines:
-#   1) Only one vararg line is allowed
-#   2) VARARGS are put in bash's special "@" variable
-#   3) Use optional VARARGS if you want to disable the
-#      strict check about the number of arguments supplied
-
-VARARGS_END
 EOF
 
 # When execution reaches this point, the parsing has terminated. All variables
@@ -204,11 +197,9 @@ echo "From arguments:"
 echo "  first_arg = $first_arg"
 echo "  second_arg = $second_arg"
 echo "  third_arg = $third_arg"
-
-echo
-echo "From varargs: ${#@} extra args given:"
+echo "  varargs: ${#@} extra args given:"
 for a in "$@"
 do
-	echo "  $a"
+	echo "    $a"
 done
 

@@ -200,7 +200,7 @@ class ArgAfterVararg(Base):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "no ARGUMENT lines allowed afeter VARARG")
+		return mess(self.cnt, "no ARGUMENT lines allowed after VARARG")
 
 class InvalidArgLine(Base):
 	def __init__(self, cnt, value):

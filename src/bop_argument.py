@@ -54,12 +54,14 @@ class BopVararg(object):
 	Initialization requires:
 	  err.ParseCount cnt:		counter for parsing errors
 	  BopSettings settings:		settings structure
+	  STRING name:			name (VARARG od @, unused)
 	  BOOL   mandatory:		is mandatory? (True, False)
 	  STRING arg_name:		arg name (for usage function)
 	"""
 	required_args = vararg_line_required_args
-	def __init__(self, cnt, settings, mandatory, arg_name):
+	def __init__(self, cnt, settings, name, mandatory, arg_name):
 		self.settings = settings
+		test(str(name).upper() == "VARARGS" or name == "@", err.Bug, (cnt, ""))
 		mandatory = mandatory.capitalize()
 		try:
 			exec("self.mandatory = " + mandatory)

@@ -54,7 +54,6 @@ class Parser(object):
 		version_block_given = False
 		options_block_given = False
 		arguments_block_given = False
-		varargs_block_given = False
 
 		insert_space_in_description = False
 		insert_space_in_version = False
@@ -95,10 +94,6 @@ class Parser(object):
 					test(not arguments_block_given, err.DuplicateBlock, (cnt, "ARGUMENTS"))
 					current_block = "ARGUMENTS_BLOCK"
 					arguments_block_given = True
-				elif line[0] == "VARARGS_BEGIN":
-					test(not varargs_block_given, err.DuplicateBlock, (cnt, "VARARGS"))
-					current_block = "VARARGS_BLOCK"
-					varargs_block_given = True
 				else:
 					raise err.UnknownDescriptor(cnt, line[0])
 			elif current_block == "SETTINGS_BLOCK":
@@ -163,28 +158,26 @@ class Parser(object):
 				if line[0] == "ARGUMENTS_END":
 					current_block = None
 					continue
-				test(self.vararg == None, err.ArgAfterVararg, (cnt, ""))
-				test(len(line) == arg.BopArgument.required_args, err.InvalidArgLine, (cnt, len(line)))
-				myarg = arg.BopArgument(cnt, self.settings, *line)
-				if not myarg.mandatory:
-					optional_arg_given = True
+				if line[0].upper() == "VARARGS" or line[0] == "@":
+					test(self.vararg == None, err.MultipleVararg, (cnt, ""))
+					test(len(line) == arg.BopVararg.required_args, err.InvalidVarargLine, (cnt, len(line)))
+					myvarg = arg.BopVararg(cnt, self.settings, *line)
+					if not myvarg.mandatory:
+						optional_arg_given = True
+					else:
+						test(not optional_arg_given, err.MandVarargAfterOptArg, (cnt, ""))
+					self.vararg = myvarg
 				else:
-					test(not optional_arg_given, err.MandArgAfterOptArg, (cnt, ""))
-				for a in self.arg_list:
-					test(myarg.name != a.name, err.DuplicateArg, (cnt, myarg.name))
-				self.arg_list.append(myarg)
-			elif current_block == "VARARGS_BLOCK":
-				if line[0] == "VARARGS_END":
-					current_block = None
-					continue
-				test(self.vararg == None, err.MultipleVararg, (cnt, ""))
-				test(len(line) == arg.BopVararg.required_args, err.InvalidVarargLine, (cnt, len(line)))
-				myvarg = arg.BopVararg(cnt, self.settings, *line)
-				if not myvarg.mandatory:
-					optional_arg_given = True
-				else:
-					test(not optional_arg_given, err.MandVarargAfterOptArg, (cnt, ""))
-				self.vararg = myvarg
+					test(self.vararg == None, err.ArgAfterVararg, (cnt, ""))
+					test(len(line) == arg.BopArgument.required_args, err.InvalidArgLine, (cnt, len(line)))
+					myarg = arg.BopArgument(cnt, self.settings, *line)
+					if not myarg.mandatory:
+						optional_arg_given = True
+					else:
+						test(not optional_arg_given, err.MandArgAfterOptArg, (cnt, ""))
+					for a in self.arg_list:
+						test(myarg.name != a.name, err.DuplicateArg, (cnt, myarg.name))
+					self.arg_list.append(myarg)
 			else:
 				raise err.Bug(cnt, "")
 

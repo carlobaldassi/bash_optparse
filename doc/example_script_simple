@@ -32,17 +32,10 @@ ARGUMENTS_BEGIN
 # NAME       MANDATORY NAME
 
   first_arg  False     "first argument"
+  Varargs    False     "extra optional args"
 
 ARGUMENTS_END
 
-VARARGS_BEGIN
-
-# IS        ARG
-# MANDATORY NAME
-
-  False     "extra optional args"
-
-VARARGS_END
 EOF
 
 # When execution reaches this point, the parsing has terminated. All variables
@@ -64,11 +57,9 @@ echo "  flag_opt = $flag_opt"
 echo
 echo "From arguments:"
 echo "  first_arg = $first_arg"
-
-echo
-echo "From varargs: ${#@} extra args given:"
+echo "  varargs: ${#@} extra args given:"
 for a in "$@"
 do
-	echo "  $a"
+	echo "    $a"
 done
 

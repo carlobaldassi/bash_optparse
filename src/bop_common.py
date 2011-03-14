@@ -28,4 +28,4 @@ def test(stmt, exc_class, exc_args):
 
 option_line_required_args = 6
 argument_line_required_args = 3
-vararg_line_required_args = 2
+vararg_line_required_args = 3
