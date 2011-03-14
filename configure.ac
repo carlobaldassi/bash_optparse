@@ -56,6 +56,7 @@ AC_SUBST(HAS_READLINK)
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
+doc/Makefile
 ])
 
 AC_OUTPUT
