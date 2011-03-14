@@ -38,6 +38,8 @@ class LinePreParser(object):
 		in_quote = False
 		in_escape = False
 		in_between = True
+
+		has_quoting = False
 		#sys.stderr.write("INPUT LINE: <" + repr(line) + ">\n")
 		if line[-1:] != "\n":
 			line = line + "\n"
@@ -54,14 +56,21 @@ class LinePreParser(object):
 		for c in line:
 			#sys.stderr.write("i=" + str(i) + " c=<" + str(c) + ">\n")
 			if c.isspace() and not in_quote and not in_escape and not in_between:
-				ret.append("".join(curr_strl))
+				outstr = "".join(curr_strl)
+				if (not has_quoting) and outstr.upper() == "NONE":
+					outstr = ""
+				ret.append(outstr)
 				curr_strl = []
 				in_between = True
+				has_quoting = False
 			elif c.isspace() and not in_quote and not in_escape and in_between:
 				pass
 			elif c == self.comment_char and in_between:
 				if len(curr_strl) > 0:
-					ret.append("".join(curr_strl))
+					outstr = "".join(curr_strl)
+					if (not has_quoting) and outstr.upper() == "NONE":
+						outstr = ""
+					ret.append(outstr)
 				curr_strl = []
 				break
 			elif c == "\n" and (in_quote or in_escape):
@@ -69,6 +78,7 @@ class LinePreParser(object):
 			elif c == self.quote_char and not in_quote and not in_escape:
 				in_quote = True
 				in_between = False
+				has_quoting = True
 			elif c == self.quote_char and in_quote and not in_escape:
 				in_quote = False
 				assert in_between == False, "WAT (bug)"
