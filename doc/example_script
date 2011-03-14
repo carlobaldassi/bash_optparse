@@ -1,0 +1,214 @@
+#!/bin/bash
+
+SCRIPT_VERSION="0.0"
+
+# In order to use bash_optparse, we source it (calling it like ". bash_optparse") and
+# we provide the command line description of options and arguments as a here-document
+# (using the "<<" operator).
+# In this way, the code is generated dynamically and the script is easily maintainable.
+#
+# Furthermore, we can use bash variables (such as $SCRIPT_VERSION in this example).
+#
+# Note that bash-style comments are allowed within bash_optparse.
+#
+# Try the following command lines:
+#   ./example_script --help
+#   ./example_script --version
+#   ./example_script a b c d e f g
+#
+# The above command lines should succeed, the following instead should fail:
+#   ./example_script
+#   ./example_script --string-option-1=four a
+#   ./example_script --int-option-3=2 a
+
+. bash_optparse-1 << EOF
+
+# Some general notes:
+#   1) Each input line is parsed and divided in words, using whitespace as delimiter, just
+#      like bash does.
+#   2) Use quoting (like "in this example") or escape with a backslash (like in\ this\ example)
+#      to insert whitespace in a word, again just like bash (but single-quote doesn't work).
+#   3) There is a global special keyword: NONE (case insensitive). It is only recognized when
+#      unquoted. It is actually a placeholder for an empty word, i.e. it is equivalent to "".
+#      In some cases, it is also a valid keyword within quotes, see below.
+#   4) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
+#      of the block. It is safer to follow the order of blocks presented here, even if it is
+#      not strict. Indentation in blocks is not required, but helps readability.
+#   5) Keywords like NONE, INT, FLOAT, STRING, INF, settings names and block_delimiters are
+#      case-insensitive (but using all-uppercase avoids confusion most of the times).
+#   6) Lines can be continued by terminating them with a backslash. Comments can be continued in
+#      this way, as well.
+
+SETTINGS_BEGIN
+
+  # These settings control the global behaviour of bash_optparse.
+  # All possible settings are shown here.
+
+  REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking)
+  WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
+                         The default is 80.
+
+SETTINGS_END
+
+DESCRIPTION_BEGIN
+
+# This block is used to provide the description of the script which is printed
+# in the auto-generated usage screen (invoked by option --help).
+# Describe the purpose of the script and of its arguments here.
+
+  This is just an example script. It takes some options,
+  a mandatory argument and some optional ones.
+
+# Notes about DESCRIPTION block:
+#   1) These lines will be wrapped together in a single block
+#   2) All whitespace will be substituded by a single space if you
+#      don't use quoting
+#   3) The keyword NONE must be quoted, or it will disappear!
+#   4) So you'd better quote each line to be safe, after all.
+
+DESCRIPTION_END
+
+VERSION_BEGIN
+
+# This block is used to provide the versioning information for the
+# script (printed with the option --version).
+
+  Example script for bash_optarg, version $SCRIPT_VERSION
+  Copyright (C) 2011 Carlo Baldassi
+  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+
+# notes about VERSION block:
+#   1) these lines will be NOT be wrapped
+#   2) everything else goes like in the DESCRIPTION block
+
+VERSION_END
+
+
+OPTIONS_BEGIN
+
+# This block is used to describe the options to the script.
+# Two options will be always added, and their name is reserved: --help and --version.
+# The option --help also has the corresponding short form -h.
+#
+# Synopsis of OPTION lines:
+#
+# VARIABLE        ARG    ARG    ARG             DEFAULT     DESCRIPTION
+# NAME            TYPE   NAME   RANGE           VALUE
+
+  string_option_1 STRING choice "one|two|three" one         "A constrained STRING option"
+  string_option_2 STRING text   NONE            "some text" "An unconstrained STRING option"
+  int_option_1    INT    n      NONE            NONE        "An INT option (unbounded)"
+  int_option_2    INT    n      [-100:100]      0           "An INT option (bounded, no step)"
+  int_option_3    INT    n      [1:2:Inf]       3           "An INT option (odd, lower bounded)"
+  int_option_4    INT    n      [-Inf:-2:10]    6           "An INT option (even, upper bounded)"
+  float_option_1  FLOAT  x      [0:1[           5e-1        "A FLOAT option"
+  float_option_2  FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
+  float_option_3  FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
+  flag_option     NONE   NONE   NONE            NONE        "A flag"
+
+# notes about OPTION lines:
+#   1) The variable name is also used as the option name, but underscores
+#      are replaced by dashes. Only alphanumeric character and underscores
+#      are allowed in names. The first letter cannot be a digit.
+#   2) There are 4 argument types: STRING, INT, FLOAT and NONE. The first
+#      three can have argument ranges and default values. INT and FLOAT types
+#      are also subject to type-checking. The floating point representation
+#      considered to be valid is that used by C.
+#   3) STRING arg_ranges are either NONE (or empty) or python regexp's which
+#      cover the whole string
+#   4) Numerical (INT and FLOAT) arg_ranges are intervals of the form
+#      *) [Min:Max]
+#      *) [Min:Step:Max]
+#      If 'Step' is positive it starts from min, if negative
+#      it starts from max. It can be NONE, but it can't be 0.
+#      'Min' can be -INF, NONE, or be omitted.
+#      'Max' can be INF, NONE, or be omitted.
+#      Brackets can be omitted (both at once, not only one).
+#      If a bracket is reversed, or a parenthesis is used instead,
+#      the corresponding extreme is not considered to be part of
+#      the interval (as in standard mathematical notation, except
+#      that INF is always out of the interval).
+#   5) Default values must always be within the given arg_range
+#   6) Numerical options allow an empty default value (use "" or NONE), to be
+#      intended as "unset". In such case, an empty string will exceptionally be
+#      accepted as argument from the command line.
+#   7) Flags options (those with arg_type NONE or empty) declare variables which
+#      are set to "false" by default, and become "true" when the option is used.
+
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+
+# This block is used to describe the named arguments to the script.
+#
+# synopsis of ARGUMENT lines:
+#
+# VARIABLE   IS        ARG
+# NAME       MANDATORY NAME
+
+  first_arg  True      "mandatory argument"
+  second_arg False     "optional argument"
+  third_arg  False     "another optional argument"
+
+# notes about ARGUMENT lines:
+#   1) The names follow the same rules as those for options
+#   2) Once an optional argument is given, all other arguments
+#      and VARARGs (see below) must also be optional.
+
+ARGUMENTS_END
+
+VARARGS_BEGIN
+
+# synopsis of VARARG line:
+#
+# IS        ARG
+# MANDATORY NAME
+
+  False     "extra optional args"
+
+# notes about VARARG lines:
+#   1) Only one vararg line is allowed
+#   2) VARARGS are put in bash's special "@" variable
+#   3) Use optional VARARGS if you want to disable the
+#      strict check about the number of arguments supplied
+
+VARARGS_END
+EOF
+
+# When execution reaches this point, the parsing has terminated. All variables
+# have been initialized and checked for type or out-of-range errors.
+#
+# Furthermore, some auxiliary functions have been defined and can be used if needed:
+#   err_mess(1), abort(1 + 1), init_options(...), check_is_null(1), check_is_int(1),
+#   check_is_float(1), check_is_in_range(6)
+
+echo "Command line parsing terminated without errors."
+echo "This is the value of the variables:"
+echo 
+echo "From options:"
+echo "  string_option_1 = $string_option_1"
+echo "  string_option_2 = $string_option_2"
+echo "  int_option_1 = $int_option_1"
+echo "  int_option_2 = $int_option_2"
+echo "  int_option_3 = $int_option_3"
+echo "  int_option_4 = $int_option_4"
+echo "  float_option_1 = $float_option_1"
+echo "  float_option_2 = $float_option_2"
+echo "  float_option_3 = $float_option_3"
+echo "  flag_option = $flag_option"
+
+echo
+echo "From arguments:"
+echo "  first_arg = $first_arg"
+echo "  second_arg = $second_arg"
+echo "  third_arg = $third_arg"
+
+echo
+echo "From varargs: ${#@} extra args given:"
+for a in "$@"
+do
+	echo "  $a"
+done
+

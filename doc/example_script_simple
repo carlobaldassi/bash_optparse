@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# A simple script to demonstrate some basic capabilities
+# of bash_optparse. See 'example_script' for a more extensive script,
+# with annotations about the syntax and explanations.
+#
+# Try the following command lines:
+#   ./example_script_simple --help
+#   ./example_script_simple --version
+#   ./example_script_simple
+
+. bash_optparse << EOF
+DESCRIPTION_BEGIN
+  This is just a simple example script.
+DESCRIPTION_END
+
+OPTIONS_BEGIN
+
+# VARIABLE     ARG    ARG    ARG     DEFAULT     DESCRIPTION
+# NAME         TYPE   NAME   RANGE   VALUE
+
+  string_opt   STRING s      NONE    "some text" "A STRING option"
+  int_opt      INT    n      NONE    0           "An INT option"
+  float_opt    FLOAT  x      [0:1]   0.5         "A FLOAT option with a range"
+  flag_opt     NONE   NONE   NONE    NONE        "A flag"
+
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+
+# VARIABLE   IS        ARG
+# NAME       MANDATORY NAME
+
+  first_arg  False     "first argument"
+
+ARGUMENTS_END
+
+VARARGS_BEGIN
+
+# IS        ARG
+# MANDATORY NAME
+
+  False     "extra optional args"
+
+VARARGS_END
+EOF
+
+# When execution reaches this point, the parsing has terminated. All variables
+# have been initialized and checked for type or out-of-range errors.
+#
+# Furthermore, some auxiliary functions have been defined and can be used if needed:
+#   err_mess(1), abort(1 + 1), init_options(...), check_is_null(1), check_is_int(1),
+#   check_is_float(1), check_is_in_range(6)
+
+echo "Command line parsing terminated without errors."
+echo "This is the value of the variables:"
+echo 
+echo "From options:"
+echo "  string_opt = $string_opt"
+echo "  int_opt = $int_opt"
+echo "  float_opt = $float_opt"
+echo "  flag_opt = $flag_opt"
+
+echo
+echo "From arguments:"
+echo "  first_arg = $first_arg"
+
+echo
+echo "From varargs: ${#@} extra args given:"
+for a in "$@"
+do
+	echo "  $a"
+done
+
