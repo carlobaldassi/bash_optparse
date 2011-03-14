@@ -38,9 +38,6 @@ scriptdir = $(bindir)
 script_DATA = \
 	$(bop_script_name)
 
-EXTRA_DIST = $(bop_script_in)
-CLEANFILES = $(script_DATA)
-
 ## Following are makefile rules to
 ## generate bash_optparse-X
 
@@ -96,4 +93,9 @@ uninstall-hook : $(bop_script_name)
 	  $(LN_S) "$${newtgt}" $(bop_link_name) && \
 	      echo "Linked $(bop_link_name) to version $${newtgt}"; \
 	fi;
+
+
+
+EXTRA_DIST = $(bop_instant_in) $(bop_script_in)
+CLEANFILES = $(bop_instant_py) $(script_DATA)
 
