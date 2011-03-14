@@ -33,6 +33,16 @@ def var_name(name):
 	else:
 		return True
 
+def optname_short(short):
+	"""
+	Check if a short option is valid
+	(must be empty or a single alphanumeric character)
+	"""
+	if re.match(r'^[A-Za-z0-9]?$', short) == None:
+		return False
+	else:
+		return True
+
 def optarg_name(name):
 	"""
 	Check if an optarg name is valid

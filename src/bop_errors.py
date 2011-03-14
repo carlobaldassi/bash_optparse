@@ -69,6 +69,13 @@ class QuotedNewline(Base):
 	def __str__(self):
 		return mess(self.cnt, "escaped or quoted newline")
 
+class WrongSplitName(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "too many `|' in variable name: `" + self.value + "'")
+
 class InvalidName(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
@@ -82,6 +89,20 @@ class ReservedName(Base):
 		self.value = value
 	def __str__(self):
 		return mess(self.cnt, "option name is reserved: `" + self.value + "'")
+
+class InvalidShortOpt(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "invalid short option: `" + self.value + "'")
+
+class ReservedShortOpt(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "short option name is reserved: `" + self.value + "'")
 
 class InvalidArgName(Base):
 	def __init__(self, cnt, value):
@@ -194,6 +215,13 @@ class DuplicateOpt(Base):
 		self.value = value
 	def __str__(self):
 		return mess(self.cnt, "duplicate OPTION name: `" + self.value + "'")
+
+class DuplicateShortOpt(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "duplicate short OPTION: `" + self.value + "'")
 
 class ArgAfterVararg(Base):
 	def __init__(self, cnt, value):

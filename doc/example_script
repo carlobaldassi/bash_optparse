@@ -9,7 +9,7 @@ SCRIPT_VERSION="0.0"
 #
 # Furthermore, we can use bash variables (such as $SCRIPT_VERSION in this example).
 #
-# Note that bash-style comments are allowed within bash_optparse.
+# Note that bash-style line comments are allowed within bash_optparse.
 #
 # Try the following command lines:
 #   ./example_script --help
@@ -24,19 +24,20 @@ SCRIPT_VERSION="0.0"
 . bash_optparse-1 << EOF
 
 # Some general notes:
-#   1) Each input line is parsed and divided in words, using whitespace as delimiter, just
+#   *) Each input line is parsed and divided in words, using whitespace as delimiter, just
 #      like bash does.
-#   2) Use quoting (like "in this example") or escape with a backslash (like in\ this\ example)
+#   *) Use quoting (like "in this example") or escape with a backslash (like in\ this\ example)
 #      to insert whitespace in a word, again just like bash (but single-quote doesn't work).
-#   3) There is a global special keyword: NONE (case insensitive). It is only recognized when
+#   *) There is a global special keyword: NONE (case insensitive). It is only recognized when
 #      unquoted. It is actually a placeholder for an empty word, i.e. it is equivalent to "".
 #      In some cases, it is also a valid keyword within quotes, see below.
-#   4) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
+#   *) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
 #      of the block. It is safer to follow the order of blocks presented here, even if it is
 #      not strict. Indentation in blocks is not required, but helps readability.
-#   5) Keywords like NONE, INT, FLOAT, STRING, INF, VARARGS, settings names and block_delimiters are
-#      case-insensitive (but using all-uppercase avoids confusion most of the times).
-#   6) Lines can be continued by terminating them with a backslash. Comments can be continued in
+#   *) Keywords like NONE, INT, FLOAT, STRING, INF, VARARGS, TRUE, FALSE, settings names and
+#      block_delimiters are case-insensitive (but using all-uppercase avoids confusion most of
+#      the times).
+#   *) Lines can be continued by terminating them with a backslash. Comments can be continued in
 #      this way, as well.
 
 SETTINGS_BEGIN
@@ -46,7 +47,7 @@ SETTINGS_BEGIN
 
   REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking)
   WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
-                         The default is 80.
+                         The default is 80. The minimum is 30.
 
 SETTINGS_END
 
@@ -60,11 +61,11 @@ DESCRIPTION_BEGIN
   a mandatory argument and some optional ones.
 
 # Notes about DESCRIPTION block:
-#   1) These lines will be wrapped together in a single block
-#   2) All whitespace will be substituded by a single space if you
+#   *) These lines will be wrapped together in a single block
+#   *) All whitespace will be substituded by a single space if you
 #      don't use quoting
-#   3) The keyword NONE must be quoted, or it will disappear!
-#   4) So you'd better quote each line to be safe, after all.
+#   *) The keyword NONE must be quoted, or it will disappear!
+#   *) So you'd better quote each line to be safe, after all.
 
 DESCRIPTION_END
 
@@ -79,9 +80,9 @@ VERSION_BEGIN
   This is free software: you are free to change and redistribute it.
   There is NO WARRANTY, to the extent permitted by law.
 
-# notes about VERSION block:
-#   1) these lines will be NOT be wrapped
-#   2) everything else goes like in the DESCRIPTION block
+# Notes about VERSION block:
+#   *) These lines will be NOT be wrapped
+#   *) Everything else goes like in the DESCRIPTION block
 
 VERSION_END
 
@@ -94,8 +95,8 @@ OPTIONS_BEGIN
 #
 # Synopsis of OPTION lines:
 #
-# VARIABLE        ARG    ARG    ARG             DEFAULT     DESCRIPTION
-# NAME            TYPE   NAME   RANGE           VALUE
+# VARIABLE NAME   ARG    ARG    ARG             DEFAULT     DESCRIPTION
+# [|SHORT OPT]    TYPE   NAME   RANGE           VALUE
 
   string_option_1 STRING choice "one|two|three" one         "A constrained STRING option"
   string_option_2 STRING text   NONE            "some text" "An unconstrained STRING option"
@@ -106,35 +107,45 @@ OPTIONS_BEGIN
   float_option_1  FLOAT  x      [0:1[           5e-1        "A FLOAT option"
   float_option_2  FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
   float_option_3  FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
-  flag_option     NONE   NONE   NONE            NONE        "A flag"
+  flag_option|f   NONE   NONE   NONE            NONE        "A flag"
 
-# notes about OPTION lines:
-#   1) The variable name is also used as the long option name, but underscores
-#      are replaced by dashes. Only alphanumeric character and underscores
-#      are allowed in names. The first letter cannot be a digit.
-#   2) There are 4 argument types: STRING, INT, FLOAT and NONE. The first
+# Notes about OPTION lines:
+#   *) The variable name is also used as the long option name, but underscores
+#      are replaced by dashes (e.g. the variable flag_option is controlled by the
+#      option --flag-option). Only alphanumeric character and underscores are
+#      allowed in names. The first character must be a letter.
+#   *) Optionally, a short option name can be specified at the end of the name,
+#      after a '|' (see the flag_option for an example). Only alphanumeric
+#      characters are allowed. The character 'h' is reserved for the help.
+#      If the short_opt name is unspecified and the long name has a single
+#      character, it will be treated as if the short name was given implicitly.
+#      If the short_opt name is unspecified (and the long name has more than
+#      one character), bash_optparse will try to generate one from the long
+#      option name, but it won't produce any errors if it doesn't succeed.
+#   *) There are 4 argument types: STRING, INT, FLOAT and NONE. The first
 #      three can have argument ranges and default values. INT and FLOAT types
 #      are also subject to type-checking. The floating point representation
 #      considered to be valid is that used by C.
-#   3) STRING arg_ranges are either NONE (or empty) or python regexp's which
+#   *) STRING arg_ranges are either NONE (or empty) or python regexp's which
 #      cover the whole string
-#   4) Numerical (INT and FLOAT) arg_ranges are intervals of the form
-#      *) [Min:Max]
-#      *) [Min:Step:Max]
-#      If 'Step' is positive it starts from min, if negative
+#   *) Numerical (INT and FLOAT) arg_ranges are either NONE (or empty) or
+#      intervals expressed in one of the two forms:
+#      +) [min:max]
+#      +) [min:step:max]
+#      If 'step' is positive it starts from min, if negative
 #      it starts from max. It can be NONE, but it can't be 0.
-#      'Min' can be -INF, NONE, or be omitted.
-#      'Max' can be INF, NONE, or be omitted.
-#      Brackets can be omitted (both at once, not only one).
+#      'min' can be -INF, NONE, or be omitted.
+#      'max' can be INF, NONE, or be omitted.
+#      Brackets can be omitted (but only both at once, not just one).
 #      If a bracket is reversed, or a parenthesis is used instead,
 #      the corresponding extreme is not considered to be part of
-#      the interval (as in standard mathematical notation, except
+#      the interval (as in conventional mathematical notation, except
 #      that INF is always out of the interval).
-#   5) Default values must always be within the given arg_range
-#   6) Numerical options allow an empty default value (use "" or NONE), to be
+#   *) Default values must always be within the given arg_range
+#   *) Numerical options allow an empty default value (use "" or NONE), to be
 #      intended as "unset". In such case, an empty string will exceptionally be
 #      accepted as argument from the command line.
-#   7) Flags options (those with arg_type NONE or empty) declare variables which
+#   *) Flags options (those with arg_type NONE or empty) declare variables which
 #      are set to "false" by default, and become "true" when the option is used.
 
 OPTIONS_END
@@ -143,7 +154,7 @@ ARGUMENTS_BEGIN
 
 # This block is used to describe the arguments to the script.
 #
-# synopsis of ARGUMENT lines:
+# Synopsis of ARGUMENT lines:
 #
 # VARIABLE   IS        ARG
 # NAME       MANDATORY NAME
@@ -153,17 +164,17 @@ ARGUMENTS_BEGIN
   third_arg  False     "another optional argument"
   @          False     "extra optional args"
 
-# notes about ARGUMENT lines:
-#   1) The names follow the same rules as those for options, except that
-#      *) help and version are not reserved
-#      *) VARARGS (case insensitive) has a special meaning
-#      *) @ is allowed, as a synonim to VARARGS
-#   2) Once an optional argument is given, all following arguments
+# Notes about ARGUMENT lines:
+#   *) The names follow the same rules as those for options, except that
+#      +) help and version are not reserved
+#      +) VARARGS (case insensitive) has a special meaning
+#      +) @ is allowed, as a synonim to VARARGS
+#   *) Once an optional argument is given, all following arguments
 #      (and VARARGS) must also be optional.
-#   3) The name in the last line may be "VARARGS" or "@", in which case
+#   *) The name in the last line may be "VARARGS" or "@", in which case
 #      it will describe all the remaining arguments, which will go in
 #      the special bash variable "@".
-#   4) Tip: use optional VARARGS if you want to disable the
+#   *) Tip: use optional VARARGS if you want to disable the
 #      strict check about the number of arguments supplied
 
 ARGUMENTS_END

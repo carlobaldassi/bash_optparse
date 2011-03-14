@@ -23,6 +23,7 @@ import textwrap
 
 import bop_errors as err
 import bop_preparser as preparser
+import bop_checks as check
 import bop_option as opt
 import bop_argument as arg
 import bop_settings as settings
@@ -152,8 +153,8 @@ class Parser(object):
 				myopt = opt.BopOption(cnt, self.settings, *line)
 				for o in self.opt_list:
 					test(myopt.name != o.name, err.DuplicateOpt, (cnt, myopt.name))
+					test(myopt.short == None or myopt.short != o.short, err.DuplicateShortOpt, (cnt, myopt.short))
 				self.opt_list.append(myopt)
-				self.usage_line.append(myopt.gen_usage_line())
 			elif current_block == "ARGUMENTS_BLOCK":
 				if line[0] == "ARGUMENTS_END":
 					current_block = None
@@ -184,6 +185,24 @@ class Parser(object):
 		for o in self.opt_list:
 			for a in self.arg_list:
 				test(o.name != a.name, err.DuplicateOptArg, (cnt, o.name))
+
+		for o in self.opt_list:
+			if (o.short != None):
+				continue
+			for c in o.name:
+				if (not check.optname_short(c)) or c == "h":
+					continue
+				found = False
+				for o1 in self.opt_list:
+					if c == o1.short:
+						found = True
+						break
+				if not found:
+					o.short = c
+					break
+
+		for o in self.opt_list:
+			self.usage_line.append(o.gen_usage_line())
 
 		if len(self.version) == 0:
 			self.version.append("Version information unspecified")
@@ -402,14 +421,21 @@ class Parser(object):
 		1) usage (no arguments, provided by print_usage)
 		2) err_mess (one message argument, provided by print_err_functions)
 		"""
-		outfile.write("PARAMETERS=$(getopt -o \"h\" -l \"version, help,")
+		short_opts_strl = [ "h" ]
+		long_opts_strl = [ "version", "help" ]
 		for i, o in enumerate(self.opt_list):
-			outfile.write(" " + o.opt_name)
+			if o.short != None:
+				if o.has_arg:
+					short_opts_strl.append(o.short + ":")
+				else:
+					short_opts_strl.append(o.short)
 			if o.has_arg:
-				outfile.write(":")
-			if i != len(self.opt_list) - 1:
-				outfile.write(",")
-		outfile.write("\" -- \"$@\")\n")
+				long_opts_strl.append(o.opt_name + ":")
+			else:
+				long_opts_strl.append(o.opt_name)
+		short_opts_str = "".join(short_opts_strl)
+		long_opts_str = ", ".join(long_opts_strl)
+		outfile.write("PARAMETERS=$(getopt -o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
 		outfile.write("[ $? -ne 0 ] && { usage_brief; exit 1; }\n")
 		outfile.write("\n")

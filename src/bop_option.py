@@ -30,7 +30,7 @@ class BopOption(object):
 	Initialization requires:
 	  err.ParseCount cnt:		counter for parsing errors
 	  BopSettings settings:		settings structure
-	  STRING name:			name (alphanum)
+	  STRING name:			name (alphanum|short)
 	  STRING arg_type:		type (INT, FLOAT, STRING)
 	  STRING arg_name:		arg name (for usage function)
 	  STRING arg_range:		range
@@ -40,7 +40,8 @@ class BopOption(object):
 	required_args = option_line_required_args
 	def __init__(self, cnt, settings, name, arg_type, arg_name, arg_range, default_arg, desc):
 		self.settings = settings
-		self.name = str(name)
+		self.name = name
+		self.short = ""
 		self.arg_type = str(arg_type)
 		self.arg_name = str(arg_name)
 		self.arg_range = str(arg_range)
@@ -50,9 +51,21 @@ class BopOption(object):
 		self.arg_range_compiled_regex = None
 		self.open_boundary = [False, False]
 
+		splitname = str(name).split("|")
+		test(len(splitname) == 1 or len(splitname) == 2, err.WrongSplitName, (cnt, name))
+		if len(splitname) > 1:
+			self.name = splitname[0]
+			self.short = splitname[1]
+		elif len(self.name) == 1:
+			self.short = self.name
+
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
 		test(self.name != "help", err.ReservedName, (cnt, self.name))
 		test(self.name != "version", err.ReservedName, (cnt, self.name))
+
+		test(check.optname_short(self.short), err.InvalidShortOpt, (cnt, self.short))
+		test(self.short != "h", err.ReservedShortOpt, (cnt, self.short))
+		self.short = check.is_empty_or_none(self.short)
 
 		self.arg_type = self.arg_type.upper()
 
@@ -222,7 +235,10 @@ class BopOption(object):
 		Returns a list containing two strings:
 		an option token and a desctiption token
 		"""
-		opt_token = "--" + self.opt_name
+		opt_token = ""
+		if self.short != None:
+			opt_token += "-" + self.short + ", "
+		opt_token += "--" + self.opt_name
 		if self.has_arg:
 			opt_token += " <" + self.arg_name + ">"
 		desc_token = self.desc
@@ -276,7 +292,10 @@ class BopOption(object):
 		"""
 		Prints the bash getopt case block for the given option.
 		"""
-		outfile.write("\t\t--" + self.opt_name + ")\n")
+		outfile.write("\t\t")
+		if self.short != None:
+			outfile.write("-" + self.short + "|")
+		outfile.write("--" + self.opt_name + ")\n")
 		if self.has_arg:
 			outfile.write("\t\t\t" + self.name + "=\"$2\"\n")
 			outfile.write("\t\t\tshift 2\n")
