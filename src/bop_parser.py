@@ -46,7 +46,18 @@ class Parser(object):
 		self.version = []
 		self.settings = settings.BopSettings()
 
+		current_block = None
 		optional_arg_given = False
+
+		settings_block_given = False
+		description_block_given = False
+		version_block_given = False
+		options_block_given = False
+		arguments_block_given = False
+		varargs_block_given = False
+
+		insert_space_in_description = False
+		insert_space_in_version = False
 
 		opt_reader = preparser.LinePreParser()
 
@@ -59,23 +70,102 @@ class Parser(object):
 			cnt.line = line
 			if len(line) == 0:
 				continue;
-			line[0] = line[0].upper()
-			if line[0] == "COMMENT" or line[0] == "#":
-				continue;
-			if line[0] == "DESCRIPTION":
-				test(len(line) == 2, err.InvalidDescLine, (cnt, len(line)))
-				self.description += line[1]
-			elif line[0] == "OPTION":
-				test(len(line[1:]) == opt.BopOption.required_args, err.InvalidOptLine, (cnt, len(line[1:])))
-				myopt = opt.BopOption(cnt, self.settings, *(line[1:]))
+
+			if current_block == None:
+				if len(line) > 1:
+					raise err.InvalidBlockBeginLine(cnt, line)
+				line[0] = line[0].upper()
+				if line[0] == "SETTINGS_BEGIN":
+					test(not settings_block_given, err.DuplicateBlock, (cnt, "SETTINGS"))
+					current_block = "SETTINGS_BLOCK"
+					settings_block_given = True
+				elif line[0] == "DESCRIPTION_BEGIN":
+					test(not description_block_given, err.DuplicateBlock, (cnt, "DESCRIPTION"))
+					current_block = "DESCRIPTION_BLOCK"
+					description_block_given = True
+				elif line[0] == "VERSION_BEGIN":
+					test(not version_block_given, err.DuplicateBlock, (cnt, "VERSION"))
+					current_block = "VERSION_BLOCK"
+					version_block_given = True
+				elif line[0] == "OPTIONS_BEGIN":
+					test(not options_block_given, err.DuplicateBlock, (cnt, "OPTIONS"))
+					current_block = "OPTIONS_BLOCK"
+					options_block_given = True
+				elif line[0] == "ARGUMENTS_BEGIN":
+					test(not arguments_block_given, err.DuplicateBlock, (cnt, "ARGUMENTS"))
+					current_block = "ARGUMENTS_BLOCK"
+					arguments_block_given = True
+				elif line[0] == "VARARGS_BEGIN":
+					test(not varargs_block_given, err.DuplicateBlock, (cnt, "VARARGS"))
+					current_block = "VARARGS_BLOCK"
+					varargs_block_given = True
+				else:
+					raise err.UnknownDescriptor(cnt, line[0])
+			elif current_block == "SETTINGS_BLOCK":
+				if line[0] == "SETTINGS_END":
+					current_block = None
+					continue
+				if line[0] == "REQUIRED_VERSION":
+					test(len(line) == 2, err.InvalidBopMinVersLine, (cnt, len(line)))
+					settings.BopRequiredVersionChecker(cnt, *(line[1:]))
+				elif line[0] == "WRAP_WIDTH":
+					test(len(line) == 2, err.InvalidBopWrapWidthLine, (cnt, len(line)))
+					try:
+						self.settings.wrap_width = int(line[1])
+					except:
+						raise err.InvalidBopWrapWidth(cnt, line[1])
+					test(self.settings.wrap_width >= 30, err.InvalidBopWrapWidth, (cnt, self.settings.wrap_width))
+				else:
+					raise err.UnknownSetting(cnt, line[0])
+			elif current_block == "DESCRIPTION_BLOCK":
+				if line[0] == "DESCRIPTION_END":
+					current_block = None
+					continue
+				for i in range(len(line)):
+					if len(line[i]) == 0:
+						continue
+					if insert_space_in_description and not line[i][0].isspace():
+						self.description += " "
+					self.description += line[i]
+					if line[i][-1].isspace():
+						insert_space_in_description = False
+					else:
+						insert_space_in_description = True
+			elif current_block == "VERSION_BLOCK":
+				if line[0] == "VERSION_END":
+					current_block = None
+					continue
+				#test(len(line) == 1, err.InvalidVersLine, (cnt, len(line)))
+				insert_space_in_version = False
+				vline = ""
+				for i in range(len(line)):
+					if len(line[i]) == 0:
+						continue
+					if insert_space_in_version and not line[i][0].isspace():
+						vline += " "
+					vline += line[i]
+					if line[i][-1].isspace():
+						insert_space_in_version = False
+					else:
+						insert_space_in_version = True
+				self.version.append(vline)
+			elif current_block == "OPTIONS_BLOCK":
+				if line[0] == "OPTIONS_END":
+					current_block = None
+					continue
+				test(len(line) == opt.BopOption.required_args, err.InvalidOptLine, (cnt, len(line)))
+				myopt = opt.BopOption(cnt, self.settings, *line)
 				for o in self.opt_list:
 					test(myopt.name != o.name, err.DuplicateOpt, (cnt, myopt.name))
 				self.opt_list.append(myopt)
 				self.usage_line.append(myopt.gen_usage_line())
-			elif line[0] == "ARGUMENT":
+			elif current_block == "ARGUMENTS_BLOCK":
+				if line[0] == "ARGUMENTS_END":
+					current_block = None
+					continue
 				test(self.vararg == None, err.ArgAfterVararg, (cnt, ""))
-				test(len(line[1:]) == arg.BopArgument.required_args, err.InvalidArgLine, (cnt, len(line[1:])))
-				myarg = arg.BopArgument(cnt, self.settings, *(line[1:]))
+				test(len(line) == arg.BopArgument.required_args, err.InvalidArgLine, (cnt, len(line)))
+				myarg = arg.BopArgument(cnt, self.settings, *line)
 				if not myarg.mandatory:
 					optional_arg_given = True
 				else:
@@ -83,37 +173,20 @@ class Parser(object):
 				for a in self.arg_list:
 					test(myarg.name != a.name, err.DuplicateArg, (cnt, myarg.name))
 				self.arg_list.append(myarg)
-			elif line[0] == "VARARG":
+			elif current_block == "VARARGS_BLOCK":
+				if line[0] == "VARARGS_END":
+					current_block = None
+					continue
 				test(self.vararg == None, err.MultipleVararg, (cnt, ""))
-				test(len(line[1:]) == arg.BopVararg.required_args, err.InvalidVarargLine, (cnt, len(line[1:])))
-				myvarg = arg.BopVararg(cnt, self.settings, *(line[1:]))
+				test(len(line) == arg.BopVararg.required_args, err.InvalidVarargLine, (cnt, len(line)))
+				myvarg = arg.BopVararg(cnt, self.settings, *line)
 				if not myvarg.mandatory:
 					optional_arg_given = True
 				else:
 					test(not optional_arg_given, err.MandVarargAfterOptArg, (cnt, ""))
 				self.vararg = myvarg
-			elif line[0] == "VERSION":
-				test(len(line) == 2, err.InvalidVersLine, (cnt, len(line)))
-				self.version.append(line[1])
-			elif line[0] == "BOP_REQUIRED_VERSION":
-				test(len(line) == 2, err.InvalidBopMinVersLine, (cnt, len(line)))
-				settings.BopRequiredVersionChecker(cnt, *(line[1:]))
-			elif line[0] == "BOP_WRAP_WIDTH":
-				test(len(line) == 2, err.InvalidBopWrapWidthLine, (cnt, len(line)))
-				try:
-					self.settings.wrap_width = int(line[1])
-				except:
-					raise err.InvalidBopWrapWidth(cnt, line[1])
-				test(self.settings.wrap_width >= 30, err.InvalidBopWrapWidth, (cnt, self.settings.wrap_width))
-			elif line[0] == "BOP_REGEX_DELIMITER":
-				test(len(line) == 2, err.InvalidBopRegexDelimiterLine, (cnt, len(line)))
-				try:
-					self.settings.regex_delimiter = str(line[1])
-				except:
-					raise err.InvalidBopRegexDelimiter(cnt, line[1])
-				test(len(self.settings.regex_delimiter) == 1, err.InvalidBopRegexDelimiter, (cnt, self.settings.regex_delimiter))
 			else:
-				raise err.UnknownDescriptor(cnt, line[0])
+				raise err.Bug(cnt, "")
 
 		for o in self.opt_list:
 			for a in self.arg_list:

@@ -62,7 +62,7 @@ class BopOption(object):
 			self.parse_type_float(cnt)
 		elif self.arg_type == "STRING":
 			self.parse_type_string(cnt)
-		elif self.arg_type == "NONE" or self.arg_type == "None" or self.arg_type == "":
+		elif self.arg_type == "NONE" or self.arg_type == "":
 			self.has_arg = False
 		else:
 			raise err.InvalidArgType(cnt, self.arg_type)
@@ -81,7 +81,7 @@ class BopOption(object):
 		elif self.arg_type == "FLOAT":
 			range_error = err.InvalidFloatRange
 		else:
-			raise err.Bug
+			raise err.Bug(cnt, "")
 
 		ar = self.arg_range.strip()
 		if ar[0] in "](":
@@ -94,8 +94,10 @@ class BopOption(object):
 		for i in range(len(ar)):
 			if len(ar[i].strip()) == 0:
 				ar[i] = None
-			elif (i == 0 and ar[i].strip() == "-Inf") or \
-				(i == len(ar) - 1 and ar[i].strip() == "Inf"):
+			elif (i == 0 and ar[i].strip().upper() == "-INF") or \
+				(i == len(ar) - 1 and ar[i].strip().upper() == "INF"):
+				ar[i] = None
+			elif (ar[i].strip().upper() == "NONE"):
 				ar[i] = None
 			else:
 				try:
@@ -148,7 +150,7 @@ class BopOption(object):
 			invalid_error = err.InvalidFloatDefaultVal
 			out_of_range_error = err.OutOfRangeFloatDefaultVal
 		else:
-			raise err.Bug
+			raise err.Bug(cnt, "")
 
 		self.default_arg = check.is_empty_or_none(self.default_arg)
 		if self.default_arg != None:

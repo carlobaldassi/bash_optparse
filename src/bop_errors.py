@@ -60,7 +60,7 @@ class Bug(Base):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "this is a bug!")
+		return mess(self.cnt, "this is a bug in bash_optparse!")
 
 class QuotedNewline(Base):
 	def __init__(self, cnt, value):
@@ -167,19 +167,26 @@ class NotBoolean(Base):
 	def __str__(self):
 		return mess(self.cnt, "not a boolean : `" + self.value + "'")
 
-class InvalidDescLine(Base):
-	def __init__(self, cnt, value):
-		Base.__init__(self, cnt)
-		self.value = value
-	def __str__(self):
-		return mess(self.cnt, "DESCRIPTION line requires 2 items, " + str(self.value) + " given")
+#class InvalidDescLine(Base):
+	#def __init__(self, cnt, value):
+		#Base.__init__(self, cnt)
+		#self.value = value
+	#def __str__(self):
+		#return mess(self.cnt, "DESCRIPTION lines require 1 item, " + str(self.value) + " given (try using quotes)")
+
+#class InvalidVersLine(Base):
+	#def __init__(self, cnt, value):
+		#Base.__init__(self, cnt)
+		#self.value = value
+	#def __str__(self):
+		#return mess(self.cnt, "VERSION line requires 1 item, " + str(self.value) + " given (try using quotes)")
 
 class InvalidOptLine(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "OPTION line requires " + str(option_line_required_args) + " items, " + str(self.value) + " given")
+		return mess(self.cnt, "OPTION lines require " + str(option_line_required_args) + " items, " + str(self.value) + " given")
 
 class DuplicateOpt(Base):
 	def __init__(self, cnt, value):
@@ -200,7 +207,7 @@ class InvalidArgLine(Base):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "ARGUMENT line requires " + str(argument_line_required_args) + " items, " + str(self.value) + " given")
+		return mess(self.cnt, "ARGUMENT lines require " + str(argument_line_required_args) + " items, " + str(self.value) + " given")
 
 class MandArgAfterOptArg(Base):
 	def __init__(self, cnt, value):
@@ -237,26 +244,19 @@ class MandVarargAfterOptArg(Base):
 	def __str__(self):
 		return mess(self.cnt, "mandatory VARARG after optional ARGUMENT")
 
-class InvalidVersLine(Base):
-	def __init__(self, cnt, value):
-		Base.__init__(self, cnt)
-		self.value = value
-	def __str__(self):
-		return mess(self.cnt, "VERSION line requires 2 items, " + str(self.value) + " given")
-
 class InvalidBopMinVersLine(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "BOP_MIN_VERSION line requires 2 items, " + str(self.value) + " given")
+		return mess(self.cnt, "MIN_VERSION line requires 2 items, " + str(self.value) + " given")
 
 class InvalidBopMinVers(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "invalid version in BOP_MIN_VERSION line: " + str(self.value))
+		return mess(self.cnt, "invalid version in MIN_VERSION line: " + str(self.value))
 
 class InsufficientBopVersion(Base):
 	def __init__(self, cnt, value):
@@ -270,7 +270,7 @@ class InvalidBopWrapWidthLine(Base):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "BOP_WRAP_WIDTH line requires 2 items, " + str(self.value) + " given")
+		return mess(self.cnt, "WRAP_WIDTH line requires 2 items, " + str(self.value) + " given")
 
 class InvalidBopWrapWidth(Base):
 	def __init__(self, cnt, value):
@@ -279,26 +279,47 @@ class InvalidBopWrapWidth(Base):
 	def __str__(self):
 		return mess(self.cnt, "wrap witdh must be an integer >= 30, " + str(self.value) + " given")
 
-class InvalidBopRegexDelimiterLine(Base):
-	def __init__(self, cnt, value):
-		Base.__init__(self, cnt)
-		self.value = value
-	def __str__(self):
-		return mess(self.cnt, "BOP_REGEX_DELIMITER line requires 2 items, " + str(self.value) + " given")
+#class InvalidBopRegexDelimiterLine(Base):
+	#def __init__(self, cnt, value):
+		#Base.__init__(self, cnt)
+		#self.value = value
+	#def __str__(self):
+		#return mess(self.cnt, "REGEX_DELIMITER line requires 2 items, " + str(self.value) + " given")
 
-class InvalidBopRegexDelimiter(Base):
+#class InvalidBopRegexDelimiter(Base):
+	#def __init__(self, cnt, value):
+		#Base.__init__(self, cnt)
+		#self.value = value
+	#def __str__(self):
+		#return mess(self.cnt, "the regex delimiter must be a single character, \`" + str(self.value) + "\' given")
+
+class InvalidBlockBeginLine(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "the regex delimiter must be a single character, \`" + str(self.value) + "\' given")
+		return mess(self.cnt, "expected block-begin line, with a single token")
+
+class DuplicateBlock(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "duplicate " + self.value + " block")
 
 class UnknownDescriptor(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "unknown line descriptor: `" + self.value + "'")
+		return mess(self.cnt, "unknown block descriptor: `" + self.value + "'")
+
+class UnknownSetting(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "unknown setting descriptor: `" + self.value + "'")
 
 class DuplicateOptArg(Base):
 	def __init__(self, cnt, value):

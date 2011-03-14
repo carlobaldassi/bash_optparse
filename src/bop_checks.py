@@ -132,7 +132,7 @@ def is_empty_or_none(string_token):
 	"""
 	Is the argument an empty string, or None?
 	"""
-	if string_token == None or string_token == "" or string_token == "None":
+	if string_token == None or (isinstance(string_token, str) and (string_token == "" or string_token.upper() == "NONE")):
 		return None
 	else:
 		return string_token
