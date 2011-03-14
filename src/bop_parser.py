@@ -128,15 +128,18 @@ class Parser(object):
 		(The "usage" function is required by print_getopt_block)
 		(It assumes that the default values are already initialized when called.)
 		"""
+
+		wrap_width = self.settings.wrap_width
+
 		twusage = textwrap.TextWrapper(break_long_words=False, \
 			break_on_hyphens=False, \
 			subsequent_indent='  ...:    ', \
-			width=self.settings.wrap_width)
+			width=wrap_width)
 
 		twdesc = textwrap.TextWrapper(break_long_words=False, \
 			break_on_hyphens=False, \
 			subsequent_indent='', \
-			width=self.settings.wrap_width)
+			width=wrap_width)
 
 		outfile.write("function usage\n")
 		outfile.write("{\n")
@@ -175,8 +178,6 @@ class Parser(object):
 
 		opt_indent = "  "
 		opt_min_sep = "  "
-
-		wrap_width = self.settings.wrap_width
 
 		opt_desc_wrap_width = wrap_width - max_opt_len - len(opt_indent) - len(opt_min_sep)
 
