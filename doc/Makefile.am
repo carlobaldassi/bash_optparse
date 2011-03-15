@@ -1,9 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
-docsdir=$(pkgdatadir)
-
-docs_SCRIPTS = \
+doc_SCRIPTS = \
 	example_script_simple \
 	example_script
 
-EXTRA_DIST = $(docs_SCRIPTS)
+doc_DATA = \
+	README
+
+EXTRA_DIST = $(doc_SCRIPTS) $(doc_DATA)
