@@ -19,6 +19,7 @@ bop_instant_in = $(srcdir)/bop_instantiated_values.py.in
 bop_instant_py = bop_instantiated_values.py
 
 do_subst_py = $(SED) \
+	   -e 's,[@]PYTHON[@],$(PYTHON),g' \
 	   -e 's,[@]CURRENT_BOP_VERSION_MAJOR[@],$(BOP_MAJOR_VERSION),g' \
 	   -e 's,[@]CURRENT_BOP_VERSION_MINOR[@],$(BOP_MINOR_VERSION),g' \
 	   -e 's,[@]CURRENT_BOP_VERSION_MICRO[@],$(BOP_MICRO_VERSION),g'

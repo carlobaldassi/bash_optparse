@@ -28,6 +28,7 @@ import bop_option as opt
 import bop_argument as arg
 import bop_settings as settings
 from bop_common import *
+from bop_instantiated_values import *
 
 class Parser(object):
 	"""
@@ -383,7 +384,7 @@ class Parser(object):
 		"""
 		outfile.write("function bop_pygrep\n")
 		outfile.write("{\n")
-		outfile.write("\t/usr/bin/env python -c \"\n")
+		outfile.write("\t" + python_binary + " -c \"\n")
 		outfile.write("import re\n")
 		outfile.write("import sys\n")
 		outfile.write("\n")

@@ -18,6 +18,7 @@
 
 # This file contains all values which need to be instantiated by make
 
+python_binary = '@PYTHON@'
 
 current_bop_version_major = '@CURRENT_BOP_VERSION_MAJOR@'
 current_bop_version_minor = '@CURRENT_BOP_VERSION_MINOR@'
