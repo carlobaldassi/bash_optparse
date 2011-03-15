@@ -97,7 +97,7 @@ OPTIONS_BEGIN
 # Synopsis of OPTION lines:
 #
 # VARIABLE NAME    ARG    ARG    ARG             DEFAULT     DESCRIPTION
-# [|SHORT OPT]     TYPE   NAME   RANGE           VALUE
+# [,SHORT OPT]     TYPE   NAME   RANGE           VALUE
 
   string_option_1  STRING choice "one|two|three" one         "A constrained STRING option"
   string_option_2  STRING text   NONE            "some text" "An unconstrained STRING option"
@@ -107,8 +107,8 @@ OPTIONS_BEGIN
   int_option_4     INT    n      [-INF:-2:10]    6           "An INT option (even, upper bounded)"
   float_option_1   FLOAT  x      [0:1[           5e-1        "A FLOAT option"
   float_option_2   FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
-  float_option_3|f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
-  flag_option_1|-  NONE   NONE   NONE            NONE        "A flag"
+  float_option_3,f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
+  flag_option,-    NONE   NONE   NONE            NONE        "A flag"
   F                NONE   NONE   NONE            NONE        "Another flag"
 
 # Notes about OPTION lines:
@@ -118,7 +118,7 @@ OPTIONS_BEGIN
 #      Only alphanumeric character and underscores are allowed in names. The first
 #      character must be a letter.
 #   *) Optionally, a short option name can be specified at the end of the name,
-#      after a '|' (see float_option_3 for an example). Only alphanumeric
+#      after a comma (see float_option_3 for an example). Only alphanumeric
 #      characters are allowed, except for the special character '-' which forces
 #      the option to be only long (see flag_option for an example, and see below
 #      for an explanation about auto-generation of short options).
@@ -209,7 +209,7 @@ echo "  int_option_4 = $int_option_4"
 echo "  float_option_1 = $float_option_1"
 echo "  float_option_2 = $float_option_2"
 echo "  float_option_3 = $float_option_3"
-echo "  flag_option_1 = $flag_option_1"
+echo "  flag_option = $flag_option"
 echo "  F = $F"
 
 echo

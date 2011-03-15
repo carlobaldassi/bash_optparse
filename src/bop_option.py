@@ -30,7 +30,7 @@ class BopOption(object):
 	Initialization requires:
 	  err.ParseCount cnt:		counter for parsing errors
 	  BopSettings settings:		settings structure
-	  STRING name:			name (alphanum|short)
+	  STRING name:			name (alphanum,short)
 	  STRING arg_type:		type (INT, FLOAT, STRING)
 	  STRING arg_name:		arg name (for usage function)
 	  STRING arg_range:		range
@@ -53,7 +53,7 @@ class BopOption(object):
 		self.arg_range_compiled_regex = None
 		self.open_boundary = [False, False]
 
-		splitname = str(name).split("|")
+		splitname = str(name).split(",")
 		test(len(splitname) == 1 or len(splitname) == 2, err.WrongSplitName, (cnt, name))
 		if len(splitname) > 1:
 			self.name = splitname[0]

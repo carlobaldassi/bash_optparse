@@ -74,7 +74,7 @@ class WrongSplitName(Base):
 		Base.__init__(self, cnt)
 		self.value = value
 	def __str__(self):
-		return mess(self.cnt, "too many `|' in variable name: `" + self.value + "'")
+		return mess(self.cnt, "too many `,' in variable name: `" + self.value + "'")
 
 class InvalidName(Base):
 	def __init__(self, cnt, value):
