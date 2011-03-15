@@ -43,6 +43,7 @@ class BopOption(object):
 		self.name = name
 		self.short = ""
 		self.force_noshort = False
+		self.short_only = False
 		self.arg_type = str(arg_type)
 		self.arg_name = str(arg_name)
 		self.arg_range = str(arg_range)
@@ -59,13 +60,13 @@ class BopOption(object):
 			self.short = splitname[1]
 		elif len(self.name) == 1:
 			self.short = self.name
+			self.short_only = True
 
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
 		test(self.name != "help", err.ReservedName, (cnt, self.name))
 		test(self.name != "version", err.ReservedName, (cnt, self.name))
 
 		test(check.optname_short(self.short) or check.directive_short(self.short), err.InvalidShortOpt, (cnt, self.short))
-		#test(self.short != "h", err.ReservedShortOpt, (cnt, self.short))
 		self.short = check.is_empty_or_none(self.short)
 		if self.short == "-":
 			self.short = None
@@ -241,8 +242,11 @@ class BopOption(object):
 		"""
 		opt_token = ""
 		if self.short != None:
-			opt_token += "-" + self.short + ", "
-		opt_token += "--" + self.opt_name
+			opt_token += "-" + self.short
+			if  not self.short_only:
+				opt_token += ", "
+		if not self.short_only:
+			opt_token += "--" + self.opt_name
 		if self.has_arg:
 			opt_token += " <" + self.arg_name + ">"
 		desc_token = self.desc
@@ -298,8 +302,12 @@ class BopOption(object):
 		"""
 		outfile.write("\t\t")
 		if self.short != None:
-			outfile.write("-" + self.short + "|")
-		outfile.write("--" + self.opt_name + ")\n")
+			outfile.write("-" + self.short)
+			if not self.short_only:
+				outfile.write("|")
+		if not self.short_only:
+			outfile.write("--" + self.opt_name)
+		outfile.write(")\n")
 		if self.has_arg:
 			outfile.write("\t\t\t" + self.name + "=\"$2\"\n")
 			outfile.write("\t\t\tshift 2\n")

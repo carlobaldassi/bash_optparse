@@ -108,20 +108,23 @@ OPTIONS_BEGIN
   float_option_1   FLOAT  x      [0:1[           5e-1        "A FLOAT option"
   float_option_2   FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
   float_option_3|f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
-  flag_option|-    NONE   NONE   NONE            NONE        "A flag"
+  flag_option_1|-  NONE   NONE   NONE            NONE        "A flag"
+  F                NONE   NONE   NONE            NONE        "Another flag"
 
 # Notes about OPTION lines:
-#   *) The variable name is also used as the long option name, but underscores
-#      are replaced by dashes (e.g. the variable flag_option is controlled by the
-#      option --flag-option). Only alphanumeric character and underscores are
-#      allowed in names. The first character must be a letter.
+#   *) The variable name is also used as the long option name (short if it has
+#      a single character, see below), but underscores are replaced by dashes
+#      (e.g. the variable flag_option is controlled by the option --flag-option).
+#      Only alphanumeric character and underscores are allowed in names. The first
+#      character must be a letter.
 #   *) Optionally, a short option name can be specified at the end of the name,
 #      after a '|' (see float_option_3 for an example). Only alphanumeric
 #      characters are allowed, except for the special character '-' which forces
 #      the option to be only long (see flag_option for an example, and see below
 #      for an explanation about auto-generation of short options).
-#   *) If the short_opt name is unspecified and the long name has a single
-#      character, it will be treated as if the short name was given implicitly.
+#   *) If the short_opt name is unspecified and the variable name has a single
+#      character, it will be used as a short name (see the option F for an example).
+#      To get the long version as well, you would use something like 'F|F'.
 #      If the short_opt name is unspecified (and the long name has more than
 #      one character, and the AUTO_SHORT_OPT setting is TRUE), bash_optparse
 #      will try to generate one from the long option name; but it won't produce
@@ -206,7 +209,8 @@ echo "  int_option_4 = $int_option_4"
 echo "  float_option_1 = $float_option_1"
 echo "  float_option_2 = $float_option_2"
 echo "  float_option_3 = $float_option_3"
-echo "  flag_option = $flag_option"
+echo "  flag_option_1 = $flag_option_1"
+echo "  F = $F"
 
 echo
 echo "From arguments:"
