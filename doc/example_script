@@ -9,7 +9,8 @@ SCRIPT_VERSION="0.0"
 #
 # Furthermore, we can use bash variables (such as $SCRIPT_VERSION in this example).
 #
-# Note that bash-style line comments are allowed within bash_optparse.
+# Note that bash-style line comments are allowed within bash_optparse: after an unquoted
+# and unescaped '#', everything on the line is ignored.
 #
 # Try the following command lines:
 #   ./example_script --help
@@ -27,15 +28,17 @@ SCRIPT_VERSION="0.0"
 #   *) Each input line is parsed and divided in words, using whitespace as delimiter, just
 #      like bash does.
 #   *) Use quoting (like "in this example") or escape with a backslash (like in\ this\ example)
-#      to insert whitespace in a word, again just like bash (but single-quote doesn't work).
+#      to insert whitespace in a word, again just like bash (but single-quote doesn't work, and
+#      quoting cannot span multiple lines).
 #   *) There is a global special keyword: NONE (case insensitive). It is only recognized when
 #      unquoted. It is actually a placeholder for an empty word, i.e. it is equivalent to "".
 #      In some cases, it is also a valid keyword within quotes, see below.
 #   *) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
-#      of the block. It is safer to follow the order of blocks presented here, even if it is
-#      not strict. Indentation in blocks is not required, but helps readability.
-#   *) Keywords like NONE, INT, FLOAT, STRING, INF, VARARGS, TRUE, FALSE, settings names and
-#      block_delimiters are case-insensitive (but using all-uppercase avoids confusion most of
+#      of the block. It is safer to follow the order of blocks presented here (SETTINGS,
+#      DESCRIPTION, VERSION, OPTIONS, ARGUMENTS), even if it is not strict. All blocks are
+#      optional. Indentation inside blocks is not required, but helps readability.
+#   *) All keywords (NONE, INT, FLOAT, STRING, INF, VARARGS, TRUE, FALSE, settings names and
+#      block_delimiters) are case-insensitive (but using all-uppercase avoids confusion most of
 #      the times).
 #   *) Lines can be continued by terminating them with a backslash. Comments can be continued in
 #      this way, as well.
@@ -45,11 +48,13 @@ SETTINGS_BEGIN
   # These settings control the global behaviour of bash_optparse.
   # All currently available settings are shown here.
 
-  REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking)
+  REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking, and \
+                         perhaps use fallbacks in the future if an old version is detected). \
+                         The syntax is 'major.minor'.
   WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
                          The default is 80. The minimum is 30.
   AUTO_SHORT_OPTS TRUE # This controls whether short options are auto-generated or not. \
-	                 The default is TRUE. Allowed values are TRUE or FALSE.
+                         The default is TRUE. Allowed values are TRUE or FALSE.
 
 SETTINGS_END
 
@@ -83,8 +88,8 @@ VERSION_BEGIN
   There is NO WARRANTY, to the extent permitted by law.
 
 # Notes about VERSION block:
-#   *) These lines will be NOT be wrapped
-#   *) Everything else works like in the DESCRIPTION block
+#   *) These lines will be NOT be wrapped.
+#   *) Everything else works like in the DESCRIPTION block.
 
 VERSION_END
 
@@ -220,6 +225,6 @@ echo "  third_arg = $third_arg"
 echo "  varargs: ${#@} extra args given:"
 for a in "$@"
 do
-	echo "    $a"
+        echo "    $a"
 done
 
