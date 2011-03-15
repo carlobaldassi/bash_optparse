@@ -16,7 +16,7 @@ m4_define([api_version], [proj_major_version])
 
 m4_define([proj_version], [proj_minor_version.proj_micro_version])
 
-m4_define([proj_name], [proj_base_name-api_version])
+m4_define([proj_name], [proj_base_name])
 
 AC_INIT([proj_name], [proj_version])
 
@@ -45,13 +45,7 @@ AM_PATH_PYTHON([2.6])
 
 AM_MAINTAINER_MODE
 
-AC_PROG_LN_S
 AC_PROG_SED
-AC_PROG_EGREP
-
-AC_CHECK_PROG(HAS_READLINK, [readlink], [yes], [no])
-AC_SUBST(HAS_READLINK)
-
 
 AC_CONFIG_FILES([
 Makefile

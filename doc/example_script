@@ -21,7 +21,7 @@ SCRIPT_VERSION="0.0"
 #   ./example_script --string-option-1=four a
 #   ./example_script --int-option-3=2 a
 
-. bash_optparse-1 << EOF
+. bash_optparse << EOF
 
 # Some general notes:
 #   *) Each input line is parsed and divided in words, using whitespace as delimiter, just
