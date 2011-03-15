@@ -42,6 +42,7 @@ class BopOption(object):
 		self.settings = settings
 		self.name = name
 		self.short = ""
+		self.force_noshort = False
 		self.arg_type = str(arg_type)
 		self.arg_name = str(arg_name)
 		self.arg_range = str(arg_range)
@@ -63,9 +64,12 @@ class BopOption(object):
 		test(self.name != "help", err.ReservedName, (cnt, self.name))
 		test(self.name != "version", err.ReservedName, (cnt, self.name))
 
-		test(check.optname_short(self.short), err.InvalidShortOpt, (cnt, self.short))
+		test(check.optname_short(self.short) or check.directive_short(self.short), err.InvalidShortOpt, (cnt, self.short))
 		test(self.short != "h", err.ReservedShortOpt, (cnt, self.short))
 		self.short = check.is_empty_or_none(self.short)
+		if self.short == "-":
+			self.short = None
+			self.force_noshort = True
 
 		self.arg_type = self.arg_type.upper()
 

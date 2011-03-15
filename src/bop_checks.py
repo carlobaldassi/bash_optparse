@@ -43,6 +43,16 @@ def optname_short(short):
 	else:
 		return True
 
+def directive_short(short):
+	"""
+	Check if a short option is a valid directive
+	(currently the only valid directive is '-')
+	"""
+	if re.match(r'^-$', short) == None:
+		return False
+	else:
+		return True
+
 def optarg_name(name):
 	"""
 	Check if an optarg name is valid

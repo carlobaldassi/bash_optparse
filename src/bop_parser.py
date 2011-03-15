@@ -111,6 +111,13 @@ class Parser(object):
 					except:
 						raise err.InvalidBopWrapWidth(cnt, line[1])
 					test(self.settings.wrap_width >= 30, err.InvalidBopWrapWidth, (cnt, self.settings.wrap_width))
+				elif line[0] == "AUTO_SHORT_OPTS":
+					test(len(line) == 2, err.InvalidBopAutoShortOptsLine, (cnt, len(line)))
+					try:
+						exec("self.settings.auto_short_opts = " + line[1].capitalize())
+					except (NameError, SyntaxError):
+						raise err.InvalidBopAutoShortOpts(cnt, line[1])
+					test(isinstance(self.settings.auto_short_opts, bool), err.InvalidBopAutoShortOpts, (cnt, line[1]))
 				else:
 					raise err.UnknownSetting(cnt, line[0])
 			elif current_block == "DESCRIPTION_BLOCK":
@@ -186,20 +193,21 @@ class Parser(object):
 			for a in self.arg_list:
 				test(o.name != a.name, err.DuplicateOptArg, (cnt, o.name))
 
-		for o in self.opt_list:
-			if (o.short != None):
-				continue
-			for c in o.name:
-				if (not check.optname_short(c)) or c == "h":
+		if self.settings.auto_short_opts:
+			for o in self.opt_list:
+				if o.short != None or o.force_noshort:
 					continue
-				found = False
-				for o1 in self.opt_list:
-					if c == o1.short:
-						found = True
+				for c in o.name:
+					if (not check.optname_short(c)) or c == "h":
+						continue
+					found = False
+					for o1 in self.opt_list:
+						if c == o1.short:
+							found = True
+							break
+					if not found:
+						o.short = c
 						break
-				if not found:
-					o.short = c
-					break
 
 		for o in self.opt_list:
 			self.usage_line.append(o.gen_usage_line())
@@ -254,7 +262,7 @@ class Parser(object):
 
 		outfile.write("Options:\n")
 
-		self.usage_line.append(["--version", "output version number and exit"])
+		self.usage_line.append(["--version", "output version information and exit"])
 		self.usage_line.append(["-h, --help", "print this help and exit"])
 
 		max_opt_len = 0

@@ -28,12 +28,12 @@ import sys
 class BopSettings(object):
 	"""
 	This has a role of a struct to hold all the
-	adjustable values which can be set through
-	BOP_XXXX type directives
+	adjustable values which can be set within
+	the SETTINGS block
 	"""
 	def __init__(self):
 		self.wrap_width = 80
-		self.regex_delimiter = "/"
+		self.auto_short_opts = True
 
 class BopRequiredVersionChecker(object):
 	"""

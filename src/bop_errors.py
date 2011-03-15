@@ -307,6 +307,20 @@ class InvalidBopWrapWidth(Base):
 	def __str__(self):
 		return mess(self.cnt, "wrap witdh must be an integer >= 30, " + str(self.value) + " given")
 
+class InvalidBopAutoShortOptsLine(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "AUTO_SHORT_OPTS line requires 2 items, " + str(self.value) + " given")
+
+class InvalidBopAutoShortOpts(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "AUTO_SHORT_OPTS must be TRUE or FALSE, " + str(self.value) + " given")
+
 #class InvalidBopRegexDelimiterLine(Base):
 	#def __init__(self, cnt, value):
 		#Base.__init__(self, cnt)
