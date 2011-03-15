@@ -65,7 +65,7 @@ class BopOption(object):
 		test(self.name != "version", err.ReservedName, (cnt, self.name))
 
 		test(check.optname_short(self.short) or check.directive_short(self.short), err.InvalidShortOpt, (cnt, self.short))
-		test(self.short != "h", err.ReservedShortOpt, (cnt, self.short))
+		#test(self.short != "h", err.ReservedShortOpt, (cnt, self.short))
 		self.short = check.is_empty_or_none(self.short)
 		if self.short == "-":
 			self.short = None

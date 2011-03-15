@@ -48,7 +48,7 @@ SETTINGS_BEGIN
   REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking)
   WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
                          The default is 80. The minimum is 30.
-  AUTO_SHORT_OPTS TRUE # This controls whether short options are auto-generated or not \
+  AUTO_SHORT_OPTS TRUE # This controls whether short options are auto-generated or not. \
 	                 The default is TRUE. Allowed values are TRUE or FALSE.
 
 SETTINGS_END
@@ -63,9 +63,9 @@ DESCRIPTION_BEGIN
   a mandatory argument and some optional ones.
 
 # Notes about DESCRIPTION block:
-#   *) These lines will be wrapped together in a single block
+#   *) These lines will be wrapped together in a single block.
 #   *) All whitespace will be substituded by a single space if you
-#      don't use quoting
+#      don't use quoting.
 #   *) The keyword NONE must be quoted, or it will disappear!
 #   *) So you'd better quote each line to be safe, after all.
 
@@ -73,7 +73,7 @@ DESCRIPTION_END
 
 VERSION_BEGIN
 
-# This block is used to provide the versioning information for the
+# This block is used to provide the version information for the
 # script (printed with the option --version).
 
   Example script for bash_optarg, version $SCRIPT_VERSION
@@ -84,7 +84,7 @@ VERSION_BEGIN
 
 # Notes about VERSION block:
 #   *) These lines will be NOT be wrapped
-#   *) Everything else goes like in the DESCRIPTION block
+#   *) Everything else works like in the DESCRIPTION block
 
 VERSION_END
 
@@ -93,7 +93,6 @@ OPTIONS_BEGIN
 
 # This block is used to describe the options to the script.
 # Two options will be always added, and their name is reserved: --help and --version.
-# The option --help also has the corresponding short form -h.
 #
 # Synopsis of OPTION lines:
 #
@@ -104,8 +103,8 @@ OPTIONS_BEGIN
   string_option_2  STRING text   NONE            "some text" "An unconstrained STRING option"
   int_option_1     INT    n      NONE            NONE        "An INT option (unbounded)"
   int_option_2     INT    n      [-100:100]      0           "An INT option (bounded, no step)"
-  int_option_3     INT    n      [1:2:Inf]       3           "An INT option (odd, lower bounded)"
-  int_option_4     INT    n      [-Inf:-2:10]    6           "An INT option (even, upper bounded)"
+  int_option_3     INT    n      [1:2:INF]       3           "An INT option (odd, lower bounded)"
+  int_option_4     INT    n      [-INF:-2:10]    6           "An INT option (even, upper bounded)"
   float_option_1   FLOAT  x      [0:1[           5e-1        "A FLOAT option"
   float_option_2   FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
   float_option_3|f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
@@ -118,15 +117,14 @@ OPTIONS_BEGIN
 #      allowed in names. The first character must be a letter.
 #   *) Optionally, a short option name can be specified at the end of the name,
 #      after a '|' (see float_option_3 for an example). Only alphanumeric
-#      characters are allowed. The character 'h' is reserved for the help. The
-#      special character '-' forces the option to be only long (see flag_option
-#      for an example, and below for an explanation about auto-generation of short
-#      options).
+#      characters are allowed, except for the special character '-' which forces
+#      the option to be only long (see flag_option for an example, and see below
+#      for an explanation about auto-generation of short options).
 #   *) If the short_opt name is unspecified and the long name has a single
 #      character, it will be treated as if the short name was given implicitly.
 #      If the short_opt name is unspecified (and the long name has more than
-#      one character), and the AUTO_SHORT_OPT setting is TRUE, bash_optparse
-#      will try to generate one from the long option name, but it won't produce
+#      one character, and the AUTO_SHORT_OPT setting is TRUE), bash_optparse
+#      will try to generate one from the long option name; but it won't produce
 #      any errors if it doesn't succeed.
 #   *) There are 4 argument types: STRING, INT, FLOAT and NONE. The first
 #      three can have argument ranges and default values. INT and FLOAT types
@@ -149,9 +147,9 @@ OPTIONS_BEGIN
 #      that INF is always out of the interval).
 #   *) Default values must always be within the given arg_range.
 #   *) Numerical options allow an empty default value (use "" or NONE), to be
-#      intended as "unset" (see float_option_2 for an example). In such case,
-#      an empty string will exceptionally be accepted as argument from the command
-#      line.
+#      intended as "unset" (see int_option_1 or float_option_2 for an example).
+#      In such case, an empty string will exceptionally be accepted as argument
+#      from the command line.
 #   *) Flags options (those with arg_type NONE or empty) declare variables which
 #      are set to "false" by default, and become "true" when the option is used.
 
@@ -166,10 +164,10 @@ ARGUMENTS_BEGIN
 # VARIABLE   IS        ARG
 # NAME       MANDATORY NAME
 
-  first_arg  True      "mandatory argument"
-  second_arg False     "optional argument"
-  third_arg  False     "another optional argument"
-  @          False     "extra optional args"
+  first_arg  TRUE      "mandatory argument"
+  second_arg FALSE     "optional argument"
+  third_arg  FALSE     "another optional argument"
+  @          FALSE     "extra optional args"
 
 # Notes about ARGUMENT lines:
 #   *) The names follow the same rules as those for options, except that

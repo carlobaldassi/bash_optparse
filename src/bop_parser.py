@@ -198,7 +198,7 @@ class Parser(object):
 				if o.short != None or o.force_noshort:
 					continue
 				for c in o.name:
-					if (not check.optname_short(c)) or c == "h":
+					if not check.optname_short(c):
 						continue
 					found = False
 					for o1 in self.opt_list:
@@ -211,6 +211,9 @@ class Parser(object):
 
 		for o in self.opt_list:
 			self.usage_line.append(o.gen_usage_line())
+
+		self.usage_line.append(["--version", "output version information and exit"])
+		self.usage_line.append(["--help", "print this help and exit"])
 
 		if len(self.version) == 0:
 			self.version.append("Version information unspecified")
@@ -261,9 +264,6 @@ class Parser(object):
 			outfile.write("\n")
 
 		outfile.write("Options:\n")
-
-		self.usage_line.append(["--version", "output version information and exit"])
-		self.usage_line.append(["-h, --help", "print this help and exit"])
 
 		max_opt_len = 0
 		for l in self.usage_line:
@@ -429,7 +429,7 @@ class Parser(object):
 		1) usage (no arguments, provided by print_usage)
 		2) err_mess (one message argument, provided by print_err_functions)
 		"""
-		short_opts_strl = [ "h" ]
+		short_opts_strl = [ ]
 		long_opts_strl = [ "version", "help" ]
 		for i, o in enumerate(self.opt_list):
 			if o.short != None:
@@ -441,6 +441,7 @@ class Parser(object):
 				long_opts_strl.append(o.opt_name + ":")
 			else:
 				long_opts_strl.append(o.opt_name)
+
 		short_opts_str = "".join(short_opts_strl)
 		long_opts_str = ", ".join(long_opts_strl)
 		outfile.write("PARAMETERS=$(getopt -o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
@@ -458,7 +459,7 @@ class Parser(object):
 		outfile.write("\t\t\tshift\n")
 		outfile.write("\t\t\tbreak\n")
 		outfile.write("\t\t\t;;\n")
-		outfile.write("\t\t-h|--help)\n")
+		outfile.write("\t\t--help)\n")
 		outfile.write("\t\t\tusage\n")
 		outfile.write("\t\t\texit 0\n")
 		outfile.write("\t\t\t;;\n")
