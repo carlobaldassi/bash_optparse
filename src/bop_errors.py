@@ -349,6 +349,13 @@ class DuplicateBlock(Base):
 	def __str__(self):
 		return mess(self.cnt, "duplicate " + self.value + " block")
 
+class BlockNotClosed(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "non closed block: " + self.value)
+
 class UnknownDescriptor(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)

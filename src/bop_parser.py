@@ -190,6 +190,8 @@ class Parser(object):
 			else:
 				raise err.Bug(cnt, "")
 
+		test(current_block == None, err.BlockNotClosed, (cnt, current_block))
+
 		for o in self.opt_list:
 			for a in self.arg_list:
 				test(o.name != a.name, err.DuplicateOptArg, (cnt, o.name))
