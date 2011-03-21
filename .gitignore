@@ -1,5 +1,4 @@
 *.sw[po]
-configure
 config.log
 config.status
 Makefile
