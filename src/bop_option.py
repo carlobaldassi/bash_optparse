@@ -63,8 +63,9 @@ class BopOption(object):
 			self.short_only = True
 
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
-		test(self.name != "help", err.ReservedName, (cnt, self.name))
-		test(self.name != "version", err.ReservedName, (cnt, self.name))
+		test(self.name != "help", err.ReservedOptName, (cnt, self.name))
+		test(self.name != "version", err.ReservedOptName, (cnt, self.name))
+		test(not (self.name.startswith("BASH_OPTPARSE_") and self.name.isupper()), err.ReservedVarName, (cnt, self.name))
 
 		test(check.optname_short(self.short) or check.directive_short(self.short), err.InvalidShortOpt, (cnt, self.short))
 		self.short = check.is_empty_or_none(self.short)
@@ -86,6 +87,13 @@ class BopOption(object):
 			raise err.InvalidArgType(cnt, self.arg_type)
 
 		self.opt_name = self.name.replace("_","-")
+
+		if not self.settings.in_function:
+			self.abort_pre = ""
+			self.abort_post = ""
+		else:
+			self.abort_pre = "( "
+			self.abort_post = " ) || { BASH_OPTPARSE_EARLY_RETURN=true; return 2; }"
 
 	def parse_with_arg_common(self, cnt):
 		self.has_arg = True
@@ -327,10 +335,10 @@ class BopOption(object):
 				checknull_clause = ""
 
 			if self.arg_type == "INT":
-				outfile.write(checknull_clause + "check_is_int " + self.name + " || abort \"Invalid argument to option " + self.opt_name + " (should be an INT): $" + self.name + "\"\n")
+				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be an INT): $" + self.name + "\"" + self.abort_post + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "FLOAT":
-				outfile.write(checknull_clause + "check_is_float " + self.name + " || abort \"Invalid argument to option " + self.opt_name + " (should be a FLOAT): $" + self.name + "\"\n")
+				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be a FLOAT): $" + self.name + "\"" + self.abort_post + "\n")
 				outfile.write("\n")
 
 	def print_check_optarg_range_block(self, outfile):
@@ -369,15 +377,15 @@ class BopOption(object):
 				outfile.write(checknull_clause + \
 					"check_is_in_range " + self.name + " " + \
 					"\"" + b0 + "\"" + " " + sr0 + " " + srst + " " + sr1 + " " + "\"" + b1 + "\"" + \
-					" || abort \"out of range argument to option " + \
+					" || " + self.abort_pre + "abort \"out of range argument to option " + \
 					self.opt_name + ": $" + self.name + \
 					" (range is " + b0 + sr0 + ":" + srst_out + sr1 + b1 + \
-					")\"\n")
+					")\"" + self.abort_post + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "STRING":
 				outfile.write("if ! bop_pygrep '^(" + self.arg_range + ")$' \"$" + self.name + "\"\n")
 				outfile.write("then\n")
-				outfile.write("\tabort \"Invalid argument to option " + self.opt_name + ": $" + self.name + " (must match regex: /" + self.arg_range + "/)\"\n")
+				outfile.write("\t" + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + ": $" + self.name + " (must match regex: /" + self.arg_range + "/)\"" + self.abort_post + "\n")
 				outfile.write("fi\n")
 				outfile.write("\n")
 			else:

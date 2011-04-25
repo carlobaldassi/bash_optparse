@@ -83,7 +83,14 @@ class InvalidName(Base):
 	def __str__(self):
 		return mess(self.cnt, "invalid variable name: `" + self.value + "'")
 
-class ReservedName(Base):
+class ReservedVarName(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "variable name is reserved: `" + self.value + "'")
+
+class ReservedOptName(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
 		self.value = value
@@ -320,6 +327,20 @@ class InvalidBopAutoShortOpts(Base):
 		self.value = value
 	def __str__(self):
 		return mess(self.cnt, "AUTO_SHORT_OPTS must be TRUE or FALSE, " + str(self.value) + " given")
+
+class InvalidBopInFunctionLine(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "IN_FUNCTION line requires 2 items, " + str(self.value) + " given")
+
+class InvalidBopInFunction(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "IN_FUNCTION must be TRUE or FALSE, " + str(self.value) + " given")
 
 #class InvalidBopRegexDelimiterLine(Base):
 	#def __init__(self, cnt, value):

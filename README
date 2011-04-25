@@ -42,6 +42,7 @@ auto-generated usage output would be:
 The ARGUMENT line describes how to pass an optional argument,
 which will be stored in the variable $infile.
 
-See `example_script_simple' and `example_script' in the `doc'
-directory for more information. The explanation of the
-syntax can be found in the comments to the example_script code.
+See `example_script_simple', `example_functions' and
+`example_script' in the `doc' directory for more information.
+The explanation of the syntax can be found in the comments to the
+`example_script' code.

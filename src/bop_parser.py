@@ -119,6 +119,13 @@ class Parser(object):
 					except (NameError, SyntaxError):
 						raise err.InvalidBopAutoShortOpts(cnt, line[1])
 					test(isinstance(self.settings.auto_short_opts, bool), err.InvalidBopAutoShortOpts, (cnt, line[1]))
+				elif line[0] == "IN_FUNCTION":
+					test(len(line) == 2, err.InvalidBopInFunctionLine, (cnt, len(line)))
+					try:
+						exec("self.settings.in_function = " + line[1].capitalize())
+					except (NameError, SyntaxError):
+						raise err.InvalidBopInFunction(cnt, line[1])
+					test(isinstance(self.settings.in_function, bool), err.InvalidBopInFunction, (cnt, line[1]))
 				else:
 					raise err.UnknownSetting(cnt, line[0])
 			elif current_block == "DESCRIPTION_BLOCK":
@@ -221,6 +228,11 @@ class Parser(object):
 		if len(self.version) == 0:
 			self.version.append("Version information unspecified")
 
+		if not self.settings.in_function:
+			self.exit_command = "exit"
+		else:
+			self.exit_command = "BASH_OPTPARSE_EARLY_RETURN=true; return"
+
 	def print_usage(self, outfile):
 		"""
 		Auto-generate the "usage", "usage_brief" and "print_version" functions for bash.
@@ -243,7 +255,12 @@ class Parser(object):
 		outfile.write("function usage\n")
 		outfile.write("{\n")
 		outfile.write("\tcat << EOF\n")
-		usage_string = "Usage: $(basename $0) [options]"
+		if not self.settings.in_function:
+			name_command = "$(basename $0)"
+		else:
+			name_command = "${FUNCNAME[3]}"
+
+		usage_string = "Usage: " + name_command + " [options]"
 		for a in self.arg_list:
 			usage_string += " "
 			if not a.mandatory:
@@ -295,11 +312,16 @@ class Parser(object):
 		outfile.write("}\n")
 		outfile.write("\n")
 
+		if not self.settings.in_function:
+			name_command = "$(basename $0)"
+		else:
+			name_command = "${FUNCNAME[3]}"
+
 		outfile.write("function usage_brief\n")
 		outfile.write("{\n")
 		outfile.write("\tcat << EOF\n")
 		outfile.write(twusage.fill(usage_string) + "\n")
-		outfile.write("(Use $(basename $0) --help for more information.)\n")
+		outfile.write("(Use " + name_command + " --help for more information.)\n")
 		outfile.write("EOF\n")
 		outfile.write("}\n")
 		outfile.write("\n")
@@ -318,7 +340,11 @@ class Parser(object):
 		Prints out the bash error functions.
 		(These are required by print_getopt_block and print_check_optarg_block.)
 		"""
-		outfile.write("function err_mess { echo \"$(basename $0): error: $1\" >> /dev/stderr; }\n")
+		if not self.settings.in_function:
+			name_command = "$(basename $0)"
+		else:
+			name_command = "${FUNCNAME[3]}"
+		outfile.write("function err_mess { echo \"" + name_command + ": error: $1\" >> /dev/stderr; }\n")
 		outfile.write("function abort { local outval=\"$2\"; err_mess \"$1\"; [[ -n \"$outval\" ]] || outval=2; exit $outval; }\n")
 		outfile.write("\n")
 
@@ -406,6 +432,7 @@ class Parser(object):
 		Prints the bash lines which define the default values.
 		(Use before print_init_line.)
 		"""
+		outfile.write("BASH_OPTPARSE_EARLY_RETURN=false\n\n")
 		for o in self.opt_list:
 			o.print_default_line(outfile)
 
@@ -449,7 +476,7 @@ class Parser(object):
 		long_opts_str = ", ".join(long_opts_strl)
 		outfile.write("PARAMETERS=$(getopt -o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
-		outfile.write("[ $? -ne 0 ] && { usage_brief; exit 1; }\n")
+		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " 1; }\n")
 		outfile.write("\n")
 		outfile.write("eval set -- \"$PARAMETERS\"\n")
 		outfile.write("\n")
@@ -464,32 +491,32 @@ class Parser(object):
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\t\t--help)\n")
 		outfile.write("\t\t\tusage\n")
-		outfile.write("\t\t\texit 0\n")
+		outfile.write("\t\t\t" + self.exit_command + " 0\n")
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\t\t--version)\n")
 		outfile.write("\t\t\tprint_version\n")
-		outfile.write("\t\t\texit 0\n")
+		outfile.write("\t\t\t" + self.exit_command + " 0\n")
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\t\t*)\n")
 		outfile.write("\t\t\tusage_brief\n")
-		outfile.write("\t\t\texit 1\n")
+		outfile.write("\t\t\t" + self.exit_command + " 1\n")
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\tesac\n")
 		outfile.write("done\n")
 		outfile.write("\n")
 		for a in self.arg_list:
 			if a.mandatory:
-				outfile.write("[[ -n \"$1\" ]] || { err_mess \"argument missing: " + a.arg_name + "\"; usage_brief; exit 1; }\n")
+				outfile.write("[[ -n \"$1\" ]] || { err_mess \"argument missing: " + a.arg_name + "\"; usage_brief; " + self.exit_command + " 1; }\n")
 				outfile.write(a.name + "=\"$1\"\n")
 				outfile.write("shift\n")
 			else:
 				outfile.write("[[ -n \"$1\" ]] && { " + a.name + "=\"$1\"; shift; }\n") 
 			outfile.write("\n")
 		if self.vararg == None:
-			outfile.write("[[ -n \"$1\" ]] && { err_mess \"extra arguments in the command line: $@\"; usage_brief; exit 1; }\n")
+			outfile.write("[[ -n \"$1\" ]] && { err_mess \"extra arguments in the command line: $@\"; usage_brief; " + self.exit_command + " 1; }\n")
 			outfile.write("\n")
 		elif self.vararg.mandatory:
-			outfile.write("[[ -n \"$1\" ]] || { err_mess \"mandatory extra arguments required in the command line\"; usage_brief; exit 1; }\n")
+			outfile.write("[[ -n \"$1\" ]] || { err_mess \"mandatory extra arguments required in the command line\"; usage_brief; " + self.exit_command + " 1; }\n")
 			outfile.write("\n")
 
 	def print_check_optarg_block(self, outfile):

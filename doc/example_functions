@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# A simple script to demonstrate how to use bash_optparse from
+# within functions.
+#
+# With respect to usage in a script there is a single difference:
+# you need to add a line at the end of bash_optparse invocation.
+#
+# (Refer to 'example_script_simple' to learn about usage in a script
+# rather than a function.)
+#
+# In this example, the additional line is stored for simplicity in
+# the variable 'bash_optparse_return' which is evaluated after the EOF
+# (see below.)
+
+
+
+# Here we define the return control statement.
+# It makes sense to put this into a bash initialization file such as
+# ~/.bashrc or /etc/bash.bashrc (remember to export it in that case).
+
+bash_optparse_return='[[ $BASH_OPTPARSE_EARLY_RETURN == "true" ]] && return $BASH_OPTPARSE_RETURN_VAL'
+
+function be_happy
+{
+	# Invocation of bash_optparse is the same as for scripts.
+	# (But notice the use of '<<-' instead of '<<' which allows
+	# indentation of the EOF.)
+
+	. bash_optparse <<- EOF
+	DESCRIPTION_BEGIN
+	  This function will make your PC happy.
+	DESCRIPTION_END
+
+	OPTIONS_BEGIN
+	  enhanced     NONE   NONE   NONE    NONE        "Augment the effect of the function"
+	OPTIONS_END
+
+	EOF
+	# Here we insert the return control statement, right after the EOF.
+	# This is only needed in functions. Notice that we need to 'eval' it.
+	eval $bash_optparse_return
+
+	local STATUS="happy :)"
+	[[ $enhanced == "true" ]] && STATUS="very happy ^_^"
+	echo "I am now $STATUS"
+	return 0;
+}
+
+function be_sad
+{
+	# Another function, very similar to the previous one.
+
+	. bash_optparse <<- EOF
+	DESCRIPTION_BEGIN
+	  This function will make your PC sad.
+	DESCRIPTION_END
+
+	OPTIONS_BEGIN
+	  enhanced     NONE   NONE   NONE    NONE        "Augment the effect of the function"
+	OPTIONS_END
+
+	EOF
+	eval $bash_optparse_return
+
+	local STATUS="sad :("
+	[[ $enhanced == "true" ]] && STATUS="very sad T_T"
+	echo "I am now $STATUS"
+	return 0;
+}
+
+[[ $(basename $0) != "example_functions" ]] && return 0;
+
+cat << EOF
+To test this script, source it with the command:
+
+ source $(basename $0)
+
+then, try these command lines:
+
+ be_happy --help
+ be_happy
+ be_sad --help
+ be_sad -e
+ be_happy please
+
+(the last command should give an error message and return.)
+EOF
