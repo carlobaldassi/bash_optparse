@@ -122,6 +122,8 @@ OPTIONS_BEGIN
 #      (e.g. the variable flag_option is controlled by the option --flag-option).
 #      Only alphanumeric character and underscores are allowed in names. The first
 #      character must be a letter.
+#   *) Apart from 'help' and 'version', also all-uppercase names starting with
+#      'BASH_OPTPARSE_' are reserved and cannot be used.
 #   *) Optionally, a short option name can be specified at the end of the name,
 #      after a comma (see float_option_3 for an example). Only alphanumeric
 #      characters are allowed, except for the special character '-' which forces
@@ -129,7 +131,7 @@ OPTIONS_BEGIN
 #      for an explanation about auto-generation of short options).
 #   *) If the short_opt name is unspecified and the variable name has a single
 #      character, it will be used as a short name (see the option F for an example).
-#      To get the long version as well, you would use something like 'F|F'.
+#      To get the long version as well, you would use something like 'F,F'.
 #      If the short_opt name is unspecified (and the long name has more than
 #      one character, and the AUTO_SHORT_OPT setting is TRUE), bash_optparse
 #      will try to generate one from the long option name; but it won't produce
@@ -179,14 +181,14 @@ ARGUMENTS_BEGIN
 
 # Notes about ARGUMENT lines:
 #   *) The names follow the same rules as those for options, except that
-#      +) help and version are not reserved
+#      +) 'help' and 'version' are not reserved
 #      +) VARARGS (case insensitive) has a special meaning
 #      +) @ is allowed, as a synonim to VARARGS
 #   *) Once an optional argument is given, all following arguments
 #      (and VARARGS) must also be optional.
-#   *) The name in the last line may be "VARARGS" or "@", in which case
+#   *) The name in the last line may be 'VARARGS' or '@', in which case
 #      it will describe all the remaining arguments, which will go in
-#      the special bash variable "@".
+#      the special bash variable '@'.
 #   *) Tip: use optional VARARGS if you want to disable the
 #      strict check about the number of arguments supplied
 

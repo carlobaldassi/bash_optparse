@@ -1,14 +1,17 @@
 Bash optparse documentation
 ===========================
 
-The documentation for bash_optparse is provided via two
+The documentation for bash_optparse is provided via three
 example files:
 
   1) example_script_simple : this is provided as a kickoff
      example and a quick reference
 
-  2) example_script : this is a full-featured and hevily
+  2) example_script : this is a full-featured and heavily
      commented example. The full syntax of bash_optparse is
      demonstrated here and explained in the comments
      therein.
+
+  3) example_function : this shows how to adjust bash_optparse
+     invocation when it is used within functions.
 

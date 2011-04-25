@@ -24,6 +24,7 @@ from bop_common import *
 from bop_instantiated_values import *
 
 import sys
+import os
 
 class BopSettings(object):
 	"""
@@ -34,6 +35,9 @@ class BopSettings(object):
 	def __init__(self):
 		self.wrap_width = 80
 		self.auto_short_opts = True
+		self.in_function = False
+		if os.environ['BASH_OPTPARSE_IS_IN_FUNC'] == "true":
+			self.in_function = True
 
 class BopRequiredVersionChecker(object):
 	"""

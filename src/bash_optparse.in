@@ -24,21 +24,34 @@
 # and outputs a script which parses the command
 # line and performs some automatic checks.
 
+if [[ -n "${FUNCNAME[0]}" ]]
+then
+	BASH_OPTPARSE_IS_IN_FUNC="true"
+	exit_cmd="return"
+else
+	BASH_OPTPARSE_IS_IN_FUNC="false"
+	exit_cmd="exit"
+fi
+export BASH_OPTPARSE_IS_IN_FUNC
+
 export PYTHONPATH="@PYTHONDIR@:$PYTHONPATH"
 
 py_script_name="@PYTHONDIR@/bash_optparse.py"
 
-[[ -f "$py_script_name" ]] &> /dev/null || { echo "$(basename $0): error: python script $py_script_name not found" >> /dev/stderr; exit 1; }
+[[ -f "$py_script_name" ]] &> /dev/null || { echo "$(basename $0): error: python script $py_script_name not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
 
 for req_command in getopt egrep gawk
 do
-	which "$req_command" &> /dev/null || { echo "$(basename $0): error: $req_command command not found" >> /dev/stderr; exit 1; }
+	which "$req_command" &> /dev/null || { echo "$(basename $0): error: $req_command command not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
 done
 
 
 AUX_FUNCS="$(@PYTHON@ $py_script_name)"
-[[ $? -eq 0 ]] || exit 1
+[[ $? -eq 0 ]] || { unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
 
-. <(echo "$AUX_FUNCS")
+. <(echo "$AUX_FUNCS" && unset AUX_FUNCS)
+BASH_OPTPARSE_RETURN_VAL=$?
 
-unset AUX_FUNCS
+unset BASH_OPTPARSE_IS_IN_FUNC
+
+[[ -n "${FUNCNAME[0]}" ]] && return $BASH_OPTPARSE_RETURN_VAL

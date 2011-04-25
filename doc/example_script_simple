@@ -32,7 +32,7 @@ ARGUMENTS_BEGIN
 # NAME       MANDATORY NAME
 
   first_arg  False     "first argument"
-  Varargs    False     "extra optional args"
+  VARARGS    False     "extra optional args"
 
 ARGUMENTS_END
 
