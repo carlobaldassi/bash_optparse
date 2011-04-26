@@ -342,6 +342,20 @@ class InvalidBopInFunction(Base):
 	def __str__(self):
 		return mess(self.cnt, "IN_FUNCTION must be TRUE or FALSE, " + str(self.value) + " given")
 
+class InvalidBopErrCodeLine(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "ERR_CODE_* lines require 2 items, " + str(self.value) + " given")
+
+class InvalidBopErrCode(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "error codes must be integers, " + str(self.value) + " given")
+
 #class InvalidBopRegexDelimiterLine(Base):
 	#def __init__(self, cnt, value):
 		#Base.__init__(self, cnt)

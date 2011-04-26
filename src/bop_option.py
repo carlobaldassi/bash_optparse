@@ -88,12 +88,17 @@ class BopOption(object):
 
 		self.opt_name = self.name.replace("_","-")
 
+	def abort_pre(self):
 		if not self.settings.in_function:
-			self.abort_pre = ""
-			self.abort_post = ""
+			return ""
 		else:
-			self.abort_pre = "( "
-			self.abort_post = " ) || { BASH_OPTPARSE_EARLY_RETURN=true; return 2; }"
+			return "( "
+
+	def abort_post(self, code):
+		if not self.settings.in_function:
+			return ""
+		else:
+			return " ) || { BASH_OPTPARSE_EARLY_RETURN=true; return " + str(code) + "; }"
 
 	def parse_with_arg_common(self, cnt):
 		self.has_arg = True
@@ -335,10 +340,18 @@ class BopOption(object):
 				checknull_clause = ""
 
 			if self.arg_type == "INT":
-				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be an INT): $" + self.name + "\"" + self.abort_post + "\n")
+				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + \
+					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					" (should be an INT): $" + self.name + "\" " + \
+					str(self.settings.err_code_opt_type) + \
+					self.abort_post(self.settings.err_code_opt_type) + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "FLOAT":
-				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be a FLOAT): $" + self.name + "\"" + self.abort_post + "\n")
+				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + \
+					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					" (should be a FLOAT): $" + self.name + "\" " + \
+					str(self.settings.err_code_opt_type) + \
+					self.abort_post(self.settings.err_code_opt_type) + "\n")
 				outfile.write("\n")
 
 	def print_check_optarg_range_block(self, outfile):
@@ -377,15 +390,19 @@ class BopOption(object):
 				outfile.write(checknull_clause + \
 					"check_is_in_range " + self.name + " " + \
 					"\"" + b0 + "\"" + " " + sr0 + " " + srst + " " + sr1 + " " + "\"" + b1 + "\"" + \
-					" || " + self.abort_pre + "abort \"out of range argument to option " + \
+					" || " + self.abort_pre() + "abort \"out of range argument to option " + \
 					self.opt_name + ": $" + self.name + \
 					" (range is " + b0 + sr0 + ":" + srst_out + sr1 + b1 + \
-					")\"" + self.abort_post + "\n")
+					")\" " + str(self.settings.err_code_opt_range) + \
+					self.abort_post(self.settings.err_code_opt_range) + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "STRING":
 				outfile.write("if ! bop_pygrep '^(" + self.arg_range + ")$' \"$" + self.name + "\"\n")
 				outfile.write("then\n")
-				outfile.write("\t" + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + ": $" + self.name + " (must match regex: /" + self.arg_range + "/)\"" + self.abort_post + "\n")
+				outfile.write("\t" + self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					": $" + self.name + " (must match regex: /" + self.arg_range + "/)\" " + \
+					str(self.settings.err_code_opt_range) + \
+					self.abort_post(self.settings.err_code_opt_range) + "\n")
 				outfile.write("fi\n")
 				outfile.write("\n")
 			else:

@@ -27,29 +27,32 @@
 if [[ -n "${FUNCNAME[0]}" ]]
 then
 	BASH_OPTPARSE_IS_IN_FUNC="true"
-	exit_cmd="return"
+	BASH_OPTPARSE_EXIT_CMD="return"
 else
 	BASH_OPTPARSE_IS_IN_FUNC="false"
-	exit_cmd="exit"
+	BASH_OPTPARSE_EXIT_CMD="exit"
 fi
 export BASH_OPTPARSE_IS_IN_FUNC
 
+[[ -n "$BASH_OPTPARSE_ERR_CODE_MISSING_ITEM" ]] || BASH_OPTPARSE_ERR_CODE_MISSING_ITEM=10;
+[[ -n "$BASH_OPTPARSE_ERR_CODE_PARSING_FAILED" ]] || BASH_OPTPARSE_ERR_CODE_PARSING_FAILED=10;
+
 export PYTHONPATH="@PYTHONDIR@:$PYTHONPATH"
 
-py_script_name="@PYTHONDIR@/bash_optparse.py"
+BASH_OPTPARSE_PY_SCRIPT_NAME="@PYTHONDIR@/bash_optparse.py"
 
-[[ -f "$py_script_name" ]] &> /dev/null || { echo "$(basename $0): error: python script $py_script_name not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+[[ -f "$BASH_OPTPARSE_PY_SCRIPT_NAME" ]] &> /dev/null || { echo "$(basename $0): error: python script $BASH_OPTPARSE_PY_SCRIPT_NAME not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_MISSING_ITEM; }
 
-for req_command in getopt egrep gawk
+for BASH_OPTPARSE_REQUIRED_COMMAND in getopt egrep gawk
 do
-	which "$req_command" &> /dev/null || { echo "$(basename $0): error: $req_command command not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+	which "$BASH_OPTPARSE_REQUIRED_COMMAND" &> /dev/null || { echo "$(basename $0): error: $BASH_OPTPARSE_REQUIRED_COMMAND command not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_MISSING_ITEM; }
 done
 
 
-AUX_FUNCS="$(@PYTHON@ $py_script_name)"
-[[ $? -eq 0 ]] || { unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+BASH_OPTPARSE_OUTPUT_SCRIPT="$(@PYTHON@ $BASH_OPTPARSE_PY_SCRIPT_NAME)"
+[[ $? -eq 0 ]] || { unset BASH_OPTPARSE_IS_IN_FUNC; $BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_PARSING_FAILED; }
 
-. <(echo "$AUX_FUNCS" && unset AUX_FUNCS)
+. <(echo "$BASH_OPTPARSE_OUTPUT_SCRIPT" && unset BASH_OPTPARSE_OUTPUT_SCRIPT)
 BASH_OPTPARSE_RETURN_VAL=$?
 
 unset BASH_OPTPARSE_IS_IN_FUNC

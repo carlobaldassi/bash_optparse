@@ -126,6 +126,31 @@ class Parser(object):
 					except (NameError, SyntaxError):
 						raise err.InvalidBopInFunction(cnt, line[1])
 					test(isinstance(self.settings.in_function, bool), err.InvalidBopInFunction, (cnt, line[1]))
+				elif line[0] == "ERR_CODE_OPT_INVALID":
+					test(len(line) == 2, err.InvalidBopErrCodeLine, (cnt, len(line)))
+					try:
+						self.settings.err_code_opt_invalid = int(line[1])
+					except:
+						raise err.InvalidBopErrCode(cnt, line[1])
+				elif line[0] == "ERR_CODE_OPT_TYPE":
+					test(len(line) == 2, err.InvalidBopErrCodeLine, (cnt, len(line)))
+					try:
+						self.settings.err_code_opt_type = int(line[1])
+					except:
+						raise err.InvalidBopErrCode(cnt, line[1])
+				elif line[0] == "ERR_CODE_OPT_RANGE":
+					test(len(line) == 2, err.InvalidBopErrCodeLine, (cnt, len(line)))
+					try:
+						self.settings.err_code_opt_range = int(line[1])
+					except:
+						raise err.InvalidBopErrCode(cnt, line[1])
+				elif line[0] == "ERR_CODE_ARG_NUM":
+					test(len(line) == 2, err.InvalidBopErrCodeLine, (cnt, len(line)))
+					try:
+						self.settings.err_code_arg_num = int(line[1])
+					except:
+						raise err.InvalidBopErrCode(cnt, line[1])
+
 				else:
 					raise err.UnknownSetting(cnt, line[0])
 			elif current_block == "DESCRIPTION_BLOCK":
@@ -476,7 +501,7 @@ class Parser(object):
 		long_opts_str = ", ".join(long_opts_strl)
 		outfile.write("PARAMETERS=$(getopt -o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
-		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " 1; }\n")
+		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "; }\n")
 		outfile.write("\n")
 		outfile.write("eval set -- \"$PARAMETERS\"\n")
 		outfile.write("\n")
@@ -499,24 +524,28 @@ class Parser(object):
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\t\t*)\n")
 		outfile.write("\t\t\tusage_brief\n")
-		outfile.write("\t\t\t" + self.exit_command + " 1\n")
+		outfile.write("\t\t\t" + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "\n")
 		outfile.write("\t\t\t;;\n")
 		outfile.write("\tesac\n")
 		outfile.write("done\n")
 		outfile.write("\n")
 		for a in self.arg_list:
 			if a.mandatory:
-				outfile.write("[[ -n \"$1\" ]] || { err_mess \"argument missing: " + a.arg_name + "\"; usage_brief; " + self.exit_command + " 1; }\n")
+				outfile.write("[[ -n \"$1\" ]] || { err_mess \"argument missing: " + a.arg_name + \
+					"\"; usage_brief; " + self.exit_command + " " + \
+					str(self.settings.err_code_arg_num) + "; }\n")
 				outfile.write(a.name + "=\"$1\"\n")
 				outfile.write("shift\n")
 			else:
 				outfile.write("[[ -n \"$1\" ]] && { " + a.name + "=\"$1\"; shift; }\n") 
 			outfile.write("\n")
 		if self.vararg == None:
-			outfile.write("[[ -n \"$1\" ]] && { err_mess \"extra arguments in the command line: $@\"; usage_brief; " + self.exit_command + " 1; }\n")
+			outfile.write("[[ -n \"$1\" ]] && { err_mess \"extra arguments in the command line: $@\"; usage_brief; " + \
+				self.exit_command + " " + str(self.settings.err_code_arg_num) + "; }\n")
 			outfile.write("\n")
 		elif self.vararg.mandatory:
-			outfile.write("[[ -n \"$1\" ]] || { err_mess \"mandatory extra arguments required in the command line\"; usage_brief; " + self.exit_command + " 1; }\n")
+			outfile.write("[[ -n \"$1\" ]] || { err_mess \"mandatory extra arguments required in the command line\"; usage_brief; " + \
+				self.exit_command + " " + str(self.settings.err_code_arg_num) + "; }\n")
 			outfile.write("\n")
 
 	def print_check_optarg_block(self, outfile):

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION="0.0"
+SCRIPT_VERSION="0.1"
 
 # In order to use bash_optparse, we source it (calling it like ". bash_optparse") and
 # we provide the command line description of options and arguments as a here-document
@@ -21,6 +21,15 @@ SCRIPT_VERSION="0.0"
 #   ./example_script
 #   ./example_script --string-option-1=four a
 #   ./example_script --int-option-3=2 a
+#
+# Note: bash_optparse itself may fail. There are two possible reasons for this:
+#   *) Some essential program or file is missing on the system (indicating some problem with
+#      installation of bash_optparse);
+#   *) The script passed to bash_optparse contains errors.
+# In both cases, bash_optparse outputs a message and exits. The default exit code is 10. You
+# may change this value by setting some environment variables, like this:
+#   export BASH_OPTPARSE_ERR_CODE_MISSING_ITEM=10
+#   export BASH_OPTPARSE_ERR_CODE_PARSING_FAILED=10
 
 . bash_optparse << EOF
 
@@ -48,13 +57,21 @@ SETTINGS_BEGIN
   # These settings control the global behaviour of bash_optparse.
   # All currently available settings are shown here.
 
-  REQUIRED_VERSION 1.0 # Use this to avoid weird problems (it will enforce version-checking, and \
-                         perhaps use fallbacks in the future if an old version is detected). \
-                         The syntax is 'major.minor'.
-  WRAP_WIDTH 80        # This controls the width of the auto-generated help screen. \
-                         The default is 80. The minimum is 30.
-  AUTO_SHORT_OPTS TRUE # This controls whether short options are auto-generated or not. \
-                         The default is TRUE. Allowed values are TRUE or FALSE.
+  REQUIRED_VERSION 1.0   # Use this to avoid weird problems (it will enforce version-checking, and \
+                           perhaps use fallbacks in the future if an old version is detected). \
+                           The syntax is 'major.minor'.
+  WRAP_WIDTH 80          # This controls the width of the auto-generated help screen. \
+                           The default is 80. The minimum is 30.
+  AUTO_SHORT_OPTS TRUE   # This controls whether short options are auto-generated or not. \
+                           The default is TRUE. Allowed values are TRUE or FALSE.
+
+  ERR_CODE_OPT_INVALID 2 # This controls the exit/return code in case an invalid option is passed in \
+                           the command line. The default is 2.
+  ERR_CODE_OPT_TYPE 2    # Same as above, for when an argument of the wrong type is passed (e.g. if you \
+                           pass a string as argument to an option expecting an int). The default is 2.
+  ERR_CODE_OPT_RANGE 2   # Same as above, for when an option argument is out of range. The default is 2.
+  ERR_CODE_ARG_NUM 2     # Same as above, for when the wrong number of arguments is passed (too few or \
+                           too many). The default is 2.
 
 SETTINGS_END
 

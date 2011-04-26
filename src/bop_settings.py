@@ -38,6 +38,10 @@ class BopSettings(object):
 		self.in_function = False
 		if os.environ['BASH_OPTPARSE_IS_IN_FUNC'] == "true":
 			self.in_function = True
+		self.err_code_opt_invalid = 2
+		self.err_code_opt_type = 2
+		self.err_code_opt_range = 2
+		self.err_code_arg_num = 2
 
 class BopRequiredVersionChecker(object):
 	"""
