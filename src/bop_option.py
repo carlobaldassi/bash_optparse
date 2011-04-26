@@ -272,11 +272,11 @@ class BopOption(object):
 				else:
 					b1 = ")"
 				if self.arg_range[0] == None:
-					sr0 = "-Inf"
+					sr0 = "-INF"
 				else:
 					sr0 = str(self.arg_range[0])
 				if self.arg_range[-1] == None:
-					sr1 = "Inf"
+					sr1 = "INF"
 				else:
 					sr1 = str(self.arg_range[-1])
 				if len(self.arg_range) == 3:
@@ -363,11 +363,11 @@ class BopOption(object):
 				if self.arg_range[0] != None:
 					sr0 = str(self.arg_range[0])
 				else:
-					sr0 = "-Inf"
+					sr0 = "-INF"
 				if self.arg_range[-1] != None:
 					sr1 = str(self.arg_range[-1])
 				else:
-					sr1 = "Inf"
+					sr1 = "INF"
 				if len(self.arg_range) == 3:
 					srst = str(self.arg_range[1])
 					srst_out = str(self.arg_range[1]) + ":"
