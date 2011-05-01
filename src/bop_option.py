@@ -53,8 +53,12 @@ class BopOption(object):
 		self.arg_range_compiled_regex = None
 		self.open_boundary = [False, False]
 
-		splitname = str(name).split(",")
-		test(len(splitname) == 1 or len(splitname) == 2, err.WrongSplitName, (cnt, name))
+		splitnamealt = str(name).split("|")
+		test(len(splitnamealt) == 1 or len(splitnamealt) == 2, err.WrongSplitAltName, (cnt, name))
+
+		self.name = splitnamealt[0]
+		splitname = str(splitnamealt[0]).split(",")
+		test(len(splitname) == 1 or len(splitname) == 2, err.WrongSplitName, (cnt, splitnamealt[0]))
 		if len(splitname) > 1:
 			self.name = splitname[0]
 			self.short = splitname[1]
@@ -65,13 +69,39 @@ class BopOption(object):
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
 		test(self.name != "help", err.ReservedOptName, (cnt, self.name))
 		test(self.name != "version", err.ReservedOptName, (cnt, self.name))
-		test(not (self.name.startswith("BASH_OPTPARSE_") and self.name.isupper()), err.ReservedVarName, (cnt, self.name))
+		test(check.var_name_is_reserved(self.name), err.ReservedVarName, (cnt, self.name))
 
 		test(check.optname_short(self.short) or check.directive_short(self.short), err.InvalidShortOpt, (cnt, self.short))
 		self.short = check.is_empty_or_none(self.short)
 		if self.short == "-":
 			self.short = None
 			self.force_noshort = True
+
+		self.name_alt = None
+		self.short_alt = ""
+		self.force_noshort_alt = False
+		self.short_only_alt = False
+		if len(splitnamealt) == 2:
+			self.name_alt = splitnamealt[1]
+			splitname = str(splitnamealt[1]).split(",")
+			test(len(splitname) == 1 or len(splitname) == 2, err.WrongSplitName, (cnt, splitnamealt[1]))
+			if len(splitname) > 1:
+				self.name_alt = splitname[0]
+				self.short_alt = splitname[1]
+			elif len(self.name_alt) == 1:
+				self.short_alt = self.name_alt
+				self.short_only_alt = True
+			test(check.alt_opt_name(self.name_alt), err.InvalidName, (cnt, self.name_alt))
+			test(self.name_alt != "help", err.ReservedOptName, (cnt, self.name_alt))
+			test(self.name_alt != "version", err.ReservedOptName, (cnt, self.name_alt))
+			#test(check.var_name_is_reserved(self.name_alt), err.ReservedVarName, (cnt, self.name_alt))
+
+			test(check.optname_short(self.short_alt) or check.directive_short(self.short_alt), err.InvalidShortOpt, (cnt, self.short_alt))
+			if self.short_alt == "-":
+				self.short_alt = None
+				self.force_noshort_alt = True
+
+		self.short_alt = check.is_empty_or_none(self.short_alt)
 
 		self.arg_type = self.arg_type.upper()
 
@@ -82,20 +112,30 @@ class BopOption(object):
 		elif self.arg_type == "STRING":
 			self.parse_type_string(cnt)
 		elif self.arg_type == "NONE" or self.arg_type == "":
-			self.has_arg = False
+			self.parse_type_flag(cnt)
 		else:
 			raise err.InvalidArgType(cnt, self.arg_type)
 
 		self.opt_name = self.name.replace("_","-")
+		self.opt_name_alt = None
+		if self.name_alt != None:
+			self.opt_name_alt = self.name_alt.replace("_","-")
 
+	def abort_pre(self):
 		if not self.settings.in_function:
-			self.abort_pre = ""
-			self.abort_post = ""
+			return ""
 		else:
-			self.abort_pre = "( "
-			self.abort_post = " ) || { BASH_OPTPARSE_EARLY_RETURN=true; return 2; }"
+			return "( "
+
+	def abort_post(self, code):
+		if not self.settings.in_function:
+			return ""
+		else:
+			return " ) || { BASH_OPTPARSE_EARLY_RETURN=true; return " + str(code) + "; }"
 
 	def parse_with_arg_common(self, cnt):
+		test(self.name_alt == None, err.InvalidDoubleName, (cnt, self.name_alt))
+
 		self.has_arg = True
 		test(check.optarg_name(self.arg_name), err.InvalidArgName, (cnt, self.arg_name))
 
@@ -195,6 +235,17 @@ class BopOption(object):
 
 		test(check.is_in_string_range(self.default_arg, self.arg_range_compiled_regex), invalid_error, (cnt, self.default_arg))
 
+	def set_flag_default_val(self, cnt):
+		invalid_error = err.InvalidFlagDefaultVal
+
+		self.default_arg = check.is_empty_or_none(self.default_arg)
+		if self.default_arg == None:
+			self.default_arg = "false"
+
+		test(check.is_bool_in_string(self.default_arg), invalid_error, (cnt, self.default_arg))
+
+		self.default_arg = self.default_arg.lower()
+
 	def parse_type_int(self, cnt):
 		self.parse_with_arg_common(cnt)
 
@@ -243,6 +294,10 @@ class BopOption(object):
 
 		self.set_string_default_val(cnt)
 
+	def parse_type_flag(self, cnt):
+		self.has_arg = False
+		self.set_flag_default_val(cnt)
+
 	def gen_usage_line(self):
 		"""
 		Returns a list containing two strings:
@@ -272,11 +327,11 @@ class BopOption(object):
 				else:
 					b1 = ")"
 				if self.arg_range[0] == None:
-					sr0 = "-Inf"
+					sr0 = "-INF"
 				else:
 					sr0 = str(self.arg_range[0])
 				if self.arg_range[-1] == None:
-					sr1 = "Inf"
+					sr1 = "INF"
 				else:
 					sr1 = str(self.arg_range[-1])
 				if len(self.arg_range) == 3:
@@ -292,17 +347,33 @@ class BopOption(object):
 			desc_token += ")"
 		return [opt_token, desc_token]
 
+	def gen_usage_line_alt(self):
+		"""
+		Same as gen_usage_line, but for the alternate option
+		(only allowed for flags)
+		"""
+		opt_token = ""
+		if self.short_alt != None:
+			opt_token += "-" + self.short_alt
+			if  not self.short_only_alt:
+				opt_token += ", "
+		if not self.short_only_alt:
+			opt_token += "--" + self.opt_name_alt
+		desc_token = "Revert the effect of option "
+		if not self.short_only:
+			desc_token += "--" + self.opt_name
+		else:
+			desc_token += "-" + self.short
+		return [opt_token, desc_token]
+
 	def print_default_line(self, outfile):
 		"""
 		Prints the bash line which initialises the default values
 		"""
-		if self.has_arg:
-			if self.default_arg != None:
-				outfile.write("default_" + self.name + "=\"" + self.default_arg + "\"\n")
-			else:
-				outfile.write("default_" + self.name + "=\"\"\n")
+		if self.default_arg != None:
+			outfile.write("default_" + self.name + "=\"" + self.default_arg + "\"\n")
 		else:
-			outfile.write("default_" + self.name + "=\"false\"\n")
+			outfile.write("default_" + self.name + "=\"\"\n")
 
 	def print_getopt_block(self, outfile):
 		"""
@@ -320,8 +391,31 @@ class BopOption(object):
 			outfile.write("\t\t\t" + self.name + "=\"$2\"\n")
 			outfile.write("\t\t\tshift 2\n")
 		else:
-			outfile.write("\t\t\t" + self.name + "=\"true\"\n")
+			if self.default_arg == "true":
+				outfile.write("\t\t\t" + self.name + "=\"false\"\n")
+			else:
+				outfile.write("\t\t\t" + self.name + "=\"true\"\n")
 			outfile.write("\t\t\tshift 1\n")
+		outfile.write("\t\t\t;;\n")
+
+	def print_getopt_block_alt(self, outfile):
+		"""
+		Prints the bash getopt case block for the alternate form
+		of the given option.
+		"""
+		outfile.write("\t\t")
+		if self.short_alt != None:
+			outfile.write("-" + self.short_alt)
+			if not self.short_only_alt:
+				outfile.write("|")
+		if not self.short_only_alt:
+			outfile.write("--" + self.opt_name_alt)
+		outfile.write(")\n")
+		if self.default_arg == "true":
+			outfile.write("\t\t\t" + self.name + "=\"true\"\n")
+		else:
+			outfile.write("\t\t\t" + self.name + "=\"false\"\n")
+		outfile.write("\t\t\tshift 1\n")
 		outfile.write("\t\t\t;;\n")
 
 	def print_check_optarg_type_block(self, outfile):
@@ -335,10 +429,18 @@ class BopOption(object):
 				checknull_clause = ""
 
 			if self.arg_type == "INT":
-				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be an INT): $" + self.name + "\"" + self.abort_post + "\n")
+				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + \
+					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					" (should be an INT): $" + self.name + "\" " + \
+					str(self.settings.err_code_opt_type) + \
+					self.abort_post(self.settings.err_code_opt_type) + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "FLOAT":
-				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + " (should be a FLOAT): $" + self.name + "\"" + self.abort_post + "\n")
+				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + \
+					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					" (should be a FLOAT): $" + self.name + "\" " + \
+					str(self.settings.err_code_opt_type) + \
+					self.abort_post(self.settings.err_code_opt_type) + "\n")
 				outfile.write("\n")
 
 	def print_check_optarg_range_block(self, outfile):
@@ -363,11 +465,11 @@ class BopOption(object):
 				if self.arg_range[0] != None:
 					sr0 = str(self.arg_range[0])
 				else:
-					sr0 = "-Inf"
+					sr0 = "-INF"
 				if self.arg_range[-1] != None:
 					sr1 = str(self.arg_range[-1])
 				else:
-					sr1 = "Inf"
+					sr1 = "INF"
 				if len(self.arg_range) == 3:
 					srst = str(self.arg_range[1])
 					srst_out = str(self.arg_range[1]) + ":"
@@ -377,15 +479,19 @@ class BopOption(object):
 				outfile.write(checknull_clause + \
 					"check_is_in_range " + self.name + " " + \
 					"\"" + b0 + "\"" + " " + sr0 + " " + srst + " " + sr1 + " " + "\"" + b1 + "\"" + \
-					" || " + self.abort_pre + "abort \"out of range argument to option " + \
+					" || " + self.abort_pre() + "abort \"out of range argument to option " + \
 					self.opt_name + ": $" + self.name + \
 					" (range is " + b0 + sr0 + ":" + srst_out + sr1 + b1 + \
-					")\"" + self.abort_post + "\n")
+					")\" " + str(self.settings.err_code_opt_range) + \
+					self.abort_post(self.settings.err_code_opt_range) + "\n")
 				outfile.write("\n")
 			elif self.arg_type == "STRING":
 				outfile.write("if ! bop_pygrep '^(" + self.arg_range + ")$' \"$" + self.name + "\"\n")
 				outfile.write("then\n")
-				outfile.write("\t" + self.abort_pre + "abort \"Invalid argument to option " + self.opt_name + ": $" + self.name + " (must match regex: /" + self.arg_range + "/)\"" + self.abort_post + "\n")
+				outfile.write("\t" + self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					": $" + self.name + " (must match regex: /" + self.arg_range + "/)\" " + \
+					str(self.settings.err_code_opt_range) + \
+					self.abort_post(self.settings.err_code_opt_range) + "\n")
 				outfile.write("fi\n")
 				outfile.write("\n")
 			else:

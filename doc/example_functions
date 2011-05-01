@@ -28,12 +28,16 @@ function be_happy
 	# indentation of the EOF.)
 
 	. bash_optparse <<- EOF
+	SETTINGS_BEGIN
+	  REQUIRED_VERSION 1.1
+	SETTINGS_END
+
 	DESCRIPTION_BEGIN
 	  This function will make your PC happy.
 	DESCRIPTION_END
 
 	OPTIONS_BEGIN
-	  enhanced     NONE   NONE   NONE    NONE        "Augment the effect of the function"
+	  enhanced|standard     NONE   NONE   NONE    NONE        "Augment the effect of the function"
 	OPTIONS_END
 
 	EOF
@@ -52,12 +56,16 @@ function be_sad
 	# Another function, very similar to the previous one.
 
 	. bash_optparse <<- EOF
+	SETTINGS_BEGIN
+	  REQUIRED_VERSION 1.1
+	SETTINGS_END
+
 	DESCRIPTION_BEGIN
 	  This function will make your PC sad.
 	DESCRIPTION_END
 
 	OPTIONS_BEGIN
-	  enhanced     NONE   NONE   NONE    NONE        "Augment the effect of the function"
+	  enhanced|standard     NONE   NONE   NONE    NONE        "Augment the effect of the function"
 	OPTIONS_END
 
 	EOF

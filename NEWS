@@ -1,0 +1,37 @@
+What's new in version 1.1
+-------------------------
+
+*) Fully customizable exit error codes:
+   +) via environment variables for errors in bash_optparse
+      invocation (installation problems, script parsing failed)
+   +) via SETTINGS for errors produced by bash_optparse at runtime
+*) Enhanced flags:
+   +) revertible default values
+   +) allow alternate flags which revert the effect
+
+Version 1.0 features
+--------------------
+
+*) Easy-to-maintain, easy-to-read syntax (similar to python's optparse)
+*) Option definitions:
+   +) Each option has a bash varaible name associated to it
+   +) type-checking: options can have arguments of type STRING, INT,
+      FLOAT, or not have arguments (i.e. flags). Type check is
+      performed at run-time
+   +) range-checking: option arguments can have ranges (STRING
+      can be subject to regexp's, INt and FLOAT can have min, max and
+      step values)
+   +) default-values: all options can have a default value
+   +) short-options: are normally auto-generated from long version, but
+      everything is customizable
+*) Arguments definitions:
+   +) Can give name to arguments, and set them as mandatory or optional;
+   +) Strict check of arguments number (except if otherwise specified).
+*) Auto-generation of nicely-formatted help message
+*) Sensible error messages:
+   +) When parsing the configuration script
+   +) When parsing the command line
+*) Customizable through settings
+*) Normally works by generating a bash script on the fly; however, the
+   generated script is made to be human-readable and readily modifiable
+*) Can be used within functions [experimental feature]
