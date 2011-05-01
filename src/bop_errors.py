@@ -69,6 +69,13 @@ class QuotedNewline(Base):
 	def __str__(self):
 		return mess(self.cnt, "escaped or quoted newline")
 
+class WrongSplitAltName(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "too many `|' in variable name: `" + self.value + "'")
+
 class WrongSplitName(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)
@@ -110,6 +117,13 @@ class ReservedShortOpt(Base):
 		self.value = value
 	def __str__(self):
 		return mess(self.cnt, "short option name is reserved: `" + self.value + "'")
+
+class InvalidDoubleName(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "double variable names are only allowed in options without arguments: `" + self.value + "'")
 
 class InvalidArgName(Base):
 	def __init__(self, cnt, value):
@@ -187,6 +201,13 @@ class InvalidStringDefaultVal(Base):
 		self.value = value
 	def __str__(self):
 		return mess(self.cnt, "invalid STRING default argument: `" + self.value + "'")
+
+class InvalidFlagDefaultVal(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "invalid flag default argument: `" + self.value + "'")
 
 class NotBoolean(Base):
 	def __init__(self, cnt, value):

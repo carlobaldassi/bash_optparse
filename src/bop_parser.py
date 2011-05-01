@@ -191,9 +191,21 @@ class Parser(object):
 					continue
 				test(len(line) == opt.BopOption.required_args, err.InvalidOptLine, (cnt, len(line)))
 				myopt = opt.BopOption(cnt, self.settings, *line)
+
+				test(myopt.opt_name_alt == None or myopt.opt_name != myopt.opt_name_alt, err.DuplicateOpt, (cnt, myopt.opt_name))
+				test(myopt.short == None or myopt.short_alt == None or myopt.short != myopt.short_alt, err.DuplicateShortOpt, (cnt, myopt.short))
+
 				for o in self.opt_list:
 					test(myopt.name != o.name, err.DuplicateOpt, (cnt, myopt.name))
 					test(myopt.short == None or myopt.short != o.short, err.DuplicateShortOpt, (cnt, myopt.short))
+
+					test(myopt.opt_name_alt == None or myopt.opt_name_alt != o.opt_name, err.DuplicateOpt, (cnt, myopt.opt_name_alt))
+					test(o.opt_name_alt == None or myopt.opt_name != o.opt_name_alt, err.DuplicateOpt, (cnt, myopt.opt_name))
+					test(myopt.opt_name_alt == None or o.opt_name_alt == None or myopt.opt_name_alt != o.opt_name_alt, err.DuplicateOpt, (cnt, myopt.opt_name_alt))
+
+					test(myopt.short_alt == None or o.short == None or myopt.short_alt != o.short, err.DuplicateShortOpt, (cnt, myopt.short_alt))
+					test(myopt.short == None or o.short_alt == None or myopt.short != o.short_alt, err.DuplicateShortOpt, (cnt, myopt.short))
+					test(myopt.short_alt == None or o.short_alt == None or myopt.short_alt != o.short_alt, err.DuplicateShortOpt, (cnt, myopt.short_alt))
 				self.opt_list.append(myopt)
 			elif current_block == "ARGUMENTS_BLOCK":
 				if line[0] == "ARGUMENTS_END":
@@ -230,22 +242,39 @@ class Parser(object):
 
 		if self.settings.auto_short_opts:
 			for o in self.opt_list:
-				if o.short != None or o.force_noshort:
+				if (o.short != None or o.force_noshort) and \
+					(o.name_alt == None or o.short_alt != None or o.force_noshort_alt):
 					continue
-				for c in o.name:
-					if not check.optname_short(c):
-						continue
-					found = False
-					for o1 in self.opt_list:
-						if c == o1.short:
-							found = True
+				if not (o.short != None or o.force_noshort):
+					for c in o.name:
+						if not check.optname_short(c):
+							continue
+						found = False
+						for o1 in self.opt_list:
+							if c == o1.short or c == o1.short_alt:
+								found = True
+								break
+						if not found:
+							o.short = c
 							break
-					if not found:
-						o.short = c
-						break
+				if not (o.name_alt == None or o.short_alt != None or o.force_noshort_alt):
+					for c in o.name_alt:
+						if not check.optname_short(c):
+							continue
+						found = False
+						for o1 in self.opt_list:
+							if c == o1.short or c == o1.short_alt:
+								found = True
+								break
+						if not found:
+							o.short_alt = c
+							break
 
 		for o in self.opt_list:
 			self.usage_line.append(o.gen_usage_line())
+			if o.name_alt != None:
+				self.usage_line.append(o.gen_usage_line_alt())
+
 
 		self.usage_line.append(["--version", "output version information and exit"])
 		self.usage_line.append(["--help", "print this help and exit"])
@@ -496,6 +525,10 @@ class Parser(object):
 				long_opts_strl.append(o.opt_name + ":")
 			else:
 				long_opts_strl.append(o.opt_name)
+			if o.name_alt != None:
+				if o.short_alt != None:
+					short_opts_strl.append(o.short_alt)
+				long_opts_strl.append(o.opt_name_alt)
 
 		short_opts_str = "".join(short_opts_strl)
 		long_opts_str = ", ".join(long_opts_strl)
@@ -510,6 +543,8 @@ class Parser(object):
 		outfile.write("\tcase \"$1\" in\n")
 		for o in self.opt_list:
 			o.print_getopt_block(outfile)
+			if o.name_alt != None:
+				o.print_getopt_block_alt(outfile)
 		outfile.write("\t\t--)\n")
 		outfile.write("\t\t\tshift\n")
 		outfile.write("\t\t\tbreak\n")

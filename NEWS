@@ -1,3 +1,14 @@
+What's new in version 1.1
+-------------------------
+
+*) Fully customizable exit error codes:
+   +) via environment variables for errors in bash_optparse
+      invocation (installation problems, script parsing failed)
+   +) via SETTINGS for errors produced by bash_optparse at runtime
+*) Enhanced flags:
+   +) revertible default values
+   +) allow alternate flags which revert the effect
+
 Version 1.0 features
 --------------------
 

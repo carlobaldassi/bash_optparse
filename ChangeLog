@@ -1,3 +1,8 @@
+2011-05-01 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* New feature: customizable error codes
+	* New feature: alternative flag names
+
 2011-04-26 Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* First release: version 1.0.0

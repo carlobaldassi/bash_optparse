@@ -28,7 +28,25 @@ def var_name(name):
 	"""
 	if re.match(r'^[A-Za-z][A-Za-z0-9_]*$', name) == None:
 		return False
-	elif re.match(r'^default_', name) != None:
+	return True
+
+def var_name_is_reserved(name):
+	"""
+	Check if a variable name is reserved
+	"""
+	if name.startswith("default_"):
+		return False
+	if name.startswith("BASH_OPTPARSE_") and name.isupper():
+		return False
+	return True
+
+def alt_opt_name(name):
+	"""
+	Check if an alternate option name is valid
+	(must start with a letter, allowed characters are letters,
+	digits, underscores and dashes)
+	"""
+	if re.match(r'^[A-Za-z][A-Za-z0-9_-]*$', name) == None:
 		return False
 	else:
 		return True
@@ -148,11 +166,18 @@ def is_float_or_none(r):
 	"""
 	return r == None or isinstance(r, float)
 
+def is_bool_in_string(string_token):
+	"""
+	Is the argument a string representing a bool?
+	"""
+	return (isinstance(string_token, str) and (string_token.upper() == "TRUE" or string_token.upper() == "FALSE"))
+
 def is_empty_or_none(string_token):
 	"""
-	Is the argument an empty string, or None?
+	If the argument is an empty string, or None, return None, otherwise return it unchanged
 	"""
 	if string_token == None or (isinstance(string_token, str) and (string_token == "" or string_token.upper() == "NONE")):
 		return None
 	else:
 		return string_token
+

@@ -68,7 +68,7 @@ class BopRequiredVersionChecker(object):
 			v_min = int(current_bop_version_minor)
 		except:
 			raise err.Bug(cnt, None)
-		
+
 		if v_maj < self.version[0]:
 			raise err.InsufficientBopVersion(cnt, version.strip())
 		elif v_maj == self.version[0]:

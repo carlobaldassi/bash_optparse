@@ -16,6 +16,8 @@ SCRIPT_VERSION="0.1"
 #   ./example_script --help
 #   ./example_script --version
 #   ./example_script a b c d e f g
+#   ./example_script --string-option-1=two --go a
+#   ./example_script --go --dont-go a
 #
 # The above command lines should succeed, the following instead should fail:
 #   ./example_script
@@ -57,7 +59,7 @@ SETTINGS_BEGIN
   # These settings control the global behaviour of bash_optparse.
   # All currently available settings are shown here.
 
-  REQUIRED_VERSION 1.0   # Use this to avoid weird problems (it will enforce version-checking, and \
+  REQUIRED_VERSION 1.1   # Use this to avoid weird problems (it will enforce version-checking, and \
                            perhaps use fallbacks in the future if an old version is detected). \
                            The syntax is 'major.minor'.
   WRAP_WIDTH 80          # This controls the width of the auto-generated help screen. \
@@ -131,7 +133,8 @@ OPTIONS_BEGIN
   float_option_2   FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
   float_option_3,f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
   flag_option,-    NONE   NONE   NONE            NONE        "A flag"
-  F                NONE   NONE   NONE            NONE        "Another flag"
+  F                NONE   NONE   NONE            TRUE        "Another flag"
+  go|dont-go,n     NONE   NONE   NONE            FALSE       "A reversible flag"
 
 # Notes about OPTION lines:
 #   *) The variable name is also used as the long option name (short if it has
@@ -139,8 +142,10 @@ OPTIONS_BEGIN
 #      (e.g. the variable flag_option is controlled by the option --flag-option).
 #      Only alphanumeric character and underscores are allowed in names. The first
 #      character must be a letter.
-#   *) Apart from 'help' and 'version', also all-uppercase names starting with
-#      'BASH_OPTPARSE_' are reserved and cannot be used.
+#   *) Apart from 'help' and 'version', there are other reserved names which cannot
+#      be used as variable names:
+#      +) names starting with 'default_'
+#      +) all-uppercase names starting with 'BASH_OPTPARSE_'
 #   *) Optionally, a short option name can be specified at the end of the name,
 #      after a comma (see float_option_3 for an example). Only alphanumeric
 #      characters are allowed, except for the special character '-' which forces
@@ -178,7 +183,27 @@ OPTIONS_BEGIN
 #      In such case, an empty string will exceptionally be accepted as argument
 #      from the command line.
 #   *) Flags options (those with arg_type NONE or empty) declare variables which
-#      are set to "false" by default, and become "true" when the option is used.
+#      are (normally) set to "false" by default, and become "true" when the option is
+#      used (note that the value is lowercase).
+#   *) It is possible to invert the default value of flags by writing TRUE in
+#      the 'default value' field (see option 'F' for an example). If this field is set
+#      to NONE or FALSE or is left empty, the default will be "false", as stated above.
+#   *) It is possible to declare an extra 'alternate' flag to revert the effect
+#      of a flag and force back the default value. In this way, if both flags are passed
+#      on the command line, the last one prevails.
+#      The alternate flags are declared by appending the alternate name right after the
+#      variable name, after a '|' (see option 'go' for an example: its alternate version
+#      is 'dont-go' with short form 'n').
+#      Alternate options declarations follow almost the same rules as normal options
+#      (including the declaration/auto-generation/inhibition of corresponding short options),
+#      with some minor differences:
+#      +) no variable names are associated to them; therefore, you can use reserved variable
+#         names (not reserved option names, though)
+#      +) you can use both underscores and dashes in the long names; underscores will be
+#         still be converted to dashes
+#      There's no need to provide a description for alternate options: it will be
+#      auto-generated.
+#
 
 OPTIONS_END
 
@@ -235,6 +260,7 @@ echo "  float_option_2 = $float_option_2"
 echo "  float_option_3 = $float_option_3"
 echo "  flag_option = $flag_option"
 echo "  F = $F"
+echo "  go = $go"
 
 echo
 echo "From arguments:"

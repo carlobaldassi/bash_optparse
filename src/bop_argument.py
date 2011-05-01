@@ -44,7 +44,7 @@ class BopArgument(object):
 			raise err.NotBoolean(cnt, mandatory)
 		self.arg_name = str(arg_name)
 		test(check.var_name(self.name), err.InvalidName, (cnt, self.name))
-		test(not (self.name.startswith("BASH_OPTPARSE_") and self.name.isupper()), err.ReservedVarName, (cnt, self.name))
+		test(check.var_name_is_reserved(self.name), err.ReservedVarName, (cnt, self.name))
 		test(isinstance(self.mandatory, bool), err.NotBoolean, (cnt, self.mandatory))
 		test(check.optarg_name(self.arg_name), err.InvalidArgName, (cnt, self.arg_name))
 
