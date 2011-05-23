@@ -1,3 +1,7 @@
+2011-05-23 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* Bugfix: fix crash with whitespace-only
+	  numeric ranges
+
 2011-05-01 Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* New feature: customizable error codes
