@@ -110,6 +110,8 @@ class BopOption(object):
 			raise err.Bug(cnt, "")
 
 		ar = self.arg_range.strip()
+		if ar == "":
+			ar = ":"
 		if ar[0] in "](":
 			self.open_boundary[0] = True
 		if ar[-1] in "[)":
