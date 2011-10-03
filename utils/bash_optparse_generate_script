@@ -1,0 +1,67 @@
+#!/bin/bash
+
+SCRIPT_VERSION="0.1"
+
+. bash_optparse << BASH_OPTPARSE_END
+SETTINGS_BEGIN
+  REQUIRED_VERSION 1.1
+SETTINGS_END
+
+DESCRIPTION_BEGIN
+  "If you have a script or a function which uses bash_optparse in the"
+  "usual way (like in the example files) and you want to inspect"
+  "the portion of bash script which is internally generated to perform"
+  "the option parsing, you can use this utility."
+  "Just pass the <bash command> which you want to inspect as an argument,"
+  "as shown in the Usage line."
+  "NOTE: <bash command> may be a function (or it may call a function): in that case,"
+  "remember to 'export -f' it before using this utility."
+  "WARNING: the given command(s) will be executed until a bash_optparse block is found;"
+  "it's up to you to make sure that bash_optparse is actually called by the command"
+  "(and please note that whatever comes before that will be actually executed)."
+DESCRIPTION_END
+
+VERSION_BEGIN
+  Script generator helper for bash_optparse, version $SCRIPT_VERSION
+  Copyright (C) 2011 Carlo Baldassi
+  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+VERSION_END
+
+ARGUMENTS_BEGIN
+# VARIABLE   IS        ARG
+# NAME       MANDATORY NAME
+  @          TRUE      "bash command"
+ARGUMENTS_END
+
+BASH_OPTPARSE_END
+
+export BASH_OPTPARSE_GENERATE_ONLY="true"
+
+parse_command=true
+while [[ $parse_command == "true" ]]
+do
+	case "$(type -t "$1")" in
+		function|file)
+			parse_command="false"
+			;;
+		alias)
+			newcmd="$(alias "$1" | sed "s/^alias $1='\(.*\)'$/\1/")"
+			shift
+			set -- "$newcmd" "$@"
+			;;
+		keyword)
+			abort "the given command is a bash keyword: $1" 1
+			;;
+		builtin)
+			abort "the given command is a bash builtin: $1" 1
+			;;
+		*)
+			abort "invalid command: $1" 1
+			;;
+	esac
+done
+
+"$@"
+
