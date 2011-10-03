@@ -10,29 +10,30 @@
 #   ./example_script_simple
 
 . bash_optparse << EOF
+
 DESCRIPTION_BEGIN
   This is just a simple example script.
 DESCRIPTION_END
 
 OPTIONS_BEGIN
 
-# VARIABLE     ARG    ARG    ARG     DEFAULT     DESCRIPTION
+# VARIABLE     ARG    ARG    ARG     DEFAULT      DESCRIPTION
 # NAME         TYPE   NAME   RANGE   VALUE
 
-  string_opt   STRING s      NONE    "some text" "A STRING option"
-  int_opt      INT    n      NONE    0           "An INT option"
-  float_opt    FLOAT  x      [0:1]   0.5         "A FLOAT option with a range"
-  flag_opt     NONE   NONE   NONE    NONE        "A flag"
+  string_opt   STRING s      NONE    "some text"  "A STRING option"
+  int_opt      INT    n      NONE    0            "An INT option"
+  float_opt    FLOAT  x      [0:1]   0.5          "A FLOAT option with a range"
+  flag_opt     NONE   NONE   NONE    NONE         "A flag"
 
 OPTIONS_END
 
 ARGUMENTS_BEGIN
 
-# VARIABLE   IS        ARG
-# NAME       MANDATORY NAME
+# VARIABLE   IS         ARG
+# NAME       MANDATORY  NAME
 
-  first_arg  False     "first argument"
-  VARARGS    False     "extra optional args"
+  first_arg  FALSE      "first argument"
+  VARARGS    FALSE      "extra optional args"
 
 ARGUMENTS_END
 

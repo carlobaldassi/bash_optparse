@@ -44,7 +44,7 @@ SCRIPT_VERSION="0.1"
 #   *) There is a global special keyword: NONE (case insensitive). It is only recognized when
 #      unquoted. It is actually a placeholder for an empty word, i.e. it is equivalent to "".
 #      In some cases, it is also a valid keyword within quotes, see below.
-#   *) Parsing goes on in blocks, delimited by XXX_BEGIN and XXX_END, where XXX is the name
+#   *) Parsing goes on in blocks, delimited by XYZ_BEGIN and XYZ_END, where XYZ is the name
 #      of the block. It is safer to follow the order of blocks presented here (SETTINGS,
 #      DESCRIPTION, VERSION, OPTIONS, ARGUMENTS), even if it is not strict. All blocks are
 #      optional. Indentation inside blocks is not required, but helps readability.
@@ -100,7 +100,7 @@ VERSION_BEGIN
 # This block is used to provide the version information for the
 # script (printed with the option --version).
 
-  Example script for bash_optarg, version $SCRIPT_VERSION
+  Example script for bash_optparse, version $SCRIPT_VERSION
   Copyright (C) 2011 Carlo Baldassi
   License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
   This is free software: you are free to change and redistribute it.
