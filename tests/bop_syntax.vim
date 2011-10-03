@@ -2,11 +2,11 @@
 " Language:	bash (extension for bash_optparse)
 " Maintainer:	Carlo Baldassi <carlobaldassi@gmail.com>
 " Last Change:	2011 May 20
-" Note:         This goes on top of standard bash syntax
-" Note:		This is best viewed with :foldmethod=marker
+" Note:         This goes on top of standard bash syntax (e.g. put it in
+"               $HOME/.vim/after/syntax/sh.vim)
 
 syntax case ignore
-syntax match bopGlobalKeywords	contained "NONE"
+syntax match   bopGlobalKeywords	contained "NONE"
 syntax case match
 syntax match   bopErr 		contained "\S.*"
 
@@ -20,6 +20,9 @@ syntax cluster bopArgItems	contains=bopArgL,bopArgErrs,bopGlobalKeywords,@bopCom
 
 syntax cluster bopCommentItems	contains=bopCommentL
 
+syntax cluster bopBashVars      contains=shDerefSimple,shDeref
+syntax cluster bopBashContain   contains=shSubSh,shFunctionOne,shFunctionTwo
+
 
 syntax cluster bopSetLines	contains=bopSetReqVerL,bopSetWrapWL,bopSetAutoSOL,bopSetErrCL
 
@@ -27,7 +30,8 @@ syntax cluster bopSetLines	contains=bopSetReqVerL,bopSetWrapWL,bopSetAutoSOL,bop
 syntax cluster bopCommentSpace	contains=bopTodo
 syntax keyword bopTodo		contained TODO FIXME XXX
 
-syntax region  bopMain		matchgroup=bopSectDelim fold start="^\s*\zsBASH_OPTPARSE_BEGIN\ze\s*\(#.*\)\?$" end="^\s*\zsBASH_OPTPARSE_END\ze\s*\(#.*\)\?$" transparent contains=@bopMainCluster
+syntax region  bopMain		matchgroup=bopSectDelim fold start="^\s*BASH_OPTPARSE_BEGIN\ze\s*\(#.*\)\?$" end="^\s*\zsBASH_OPTPARSE_END\ze\s*\(#.*\)\?$" transparent contains=@bopMainCluster containedin=shExpr,@bopBashContain
+syntax region  bopMain2		matchgroup=bopSectDelim fold start="^\s*\(\.\|source\)\s\+\(bash_optparse\|bop_use_local\)\s*<<-\?\s*\z(\S\+\)\s*\(#.*\)\?$" end="^\s*\zs\z1\ze\s*$" transparent contains=@bopMainCluster containedin=shExpr,@bopBashContain
 
 syntax match   bopSetErrs	contained "\S.*" contains=@bopCommentItems
 syntax case ignore
@@ -99,8 +103,8 @@ syntax match   bopVerSkipLB	contained "\\\n"
 
 syntax region  bopOptErr	contained start=+\S.*+ skip="\\$" end="$" contains=bopOptSkipLB,@bopCommentItems
 syntax region  bopOptL		contained start="^\s*\(OPTIONS_END\s*$\)\@!\S\+" skip="\\$" end="$" keepend contains=bopOptL1,bopOptL1Alt,bopOptErr,bopOptSpecial,bopOptSkipLB,@bopCommentItems,bopGlobalKeywords
-syntax region  bopOptL1		contained matchgroup=bopOptName start=+^\s*\(help\>\|version\>\|default_\|BASH_OPTPARSE_\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopOptErr,bopOptL2S,bopOptL2F,bopOptL2I,bopOptL2N,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
-syntax region  bopOptL1Alt	contained matchgroup=bopOptName start=+^\s*\(help\>\|version\>\|default_\|BASH_OPTPARSE_\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?|\(help\>\|version\>\)\@!\a\(\a\|\d\|[-_]\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopOptErr,bopOptL2N,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL1		contained matchgroup=bopOptName start=+^\s*\(help\>\|version\>\|default_\|BASH_OPTPARSE_\u*\>\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopOptErr,bopOptL2S,bopOptL2F,bopOptL2I,bopOptL2N,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL1Alt	contained matchgroup=bopOptName start=+^\s*\(help\>\|version\>\|default_\|BASH_OPTPARSE_\u*\>\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?|\(help\>\|version\>\)\@!\a\(\a\|\d\|[-_]\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopOptErr,bopOptL2N,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
 
 syntax case ignore
 syntax region  bopOptL2S	contained matchgroup=bopOptType start=+\s*\("\s*"\)*\(STRING\|"STRING"\)\("\s*"\)*\s\++ skip="\\$" end="$" contains=bopOptL3S,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
@@ -137,7 +141,7 @@ syntax match   bopOptSkipLB	contained "\\\n"
 
 syntax region  bopArgErr	contained start=+\S.*+ skip="\\$" end="$" contains=bopArgSkipLB,@bopCommentItems
 syntax region  bopArgL		contained start="^\s*\(ARGUMENTS_END\s*$\)\@!\S\+" skip="\\$" end="$" keepend contains=bopArgL1,bopArgL1VA,bopArgErr,bopArgSpecial,bopArgSkipLB,@bopCommentItems,bopGlobalKeywords
-syntax region  bopArgL1		contained matchgroup=bopArgName start=+^\s*\(default_\|BASH_OPTPARSE_\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopArgErr,bopArgL2,bopArgSpecial,bopArgSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopArgL1		contained matchgroup=bopArgName start=+^\s*\(default_\|BASH_OPTPARSE_\u*\>\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopArgErr,bopArgL2,bopArgSpecial,bopArgSkipLB,bopGlobalKeywords,@bopCommentItems
 
 syntax case ignore
 syntax region  bopArgL1VA	contained matchgroup=bopArgName start=+^\s*\%(VARARGS\|@\)\ze\s\++ skip="\\$" end="$" contains=bopArgErr,bopArgL2,bopArgSpecial,bopArgSkipLB,bopGlobalKeywords,@bopCommentItems
@@ -173,33 +177,30 @@ hi def link bopSetAutoSOArgs	Number
 hi def link bopSetErrCArgs	Number
 hi def link bopTodo		Todo
 
-hi def link bopDescTextNQ	Number
+hi def link bopDescTextNQ	Character
 hi def link bopDescTextQ	String
 hi def link bopDescSpecial	SpecialChar
 hi def link bopDescSkipLB	SpecialChar
 
-hi def link bopVerTextNQ	Number
+hi def link bopVerTextNQ	Character
 hi def link bopVerTextQ		String
 hi def link bopVerSpecial	SpecialChar
 hi def link bopVerSkipLB	SpecialChar
 
-hi def link bopOptL		Number
-"hi def link bopOptL1		Error
-"hi def link bopOptL1Alt		Error
-hi def link bopOptName		String
-hi def link bopOptType		Label
-hi def link bopOptAName		PreProc
-hi def link bopOptARange	StatusLine
-hi def link bopOptADef		StatusLineNC
-hi def link bopOptDesc		Todo
+"hi def link bopOptL		Number
+hi def link bopOptName		PreProc
+hi def link bopOptType		Keyword
+hi def link bopOptAName		Identifier
+hi def link bopOptARange	String
+hi def link bopOptADef		Constant
+hi def link bopOptDesc		String
 hi def link bopOptSpecial	SpecialChar
 hi def link bopOptSkipLB	SpecialChar
 
-hi def link bopArgL		Number
-"hi def link bopArgL1		Error
-hi def link bopArgName		String
-hi def link bopArgMand		Label
-hi def link bopArgDesc		Todo
+"hi def link bopArgL		Number
+hi def link bopArgName		PreProc
+hi def link bopArgMand		Keyword
+hi def link bopArgDesc		String
 hi def link bopArgSpecial	SpecialChar
 hi def link bopArgSkipLB	SpecialChar
 
