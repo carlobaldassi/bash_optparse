@@ -10,8 +10,8 @@
 # This wraps the local version of the script
 # rather than the installed one, for debugging
 # purposes.
-# It also allows to optionally inspect the
-# generated script.
+# In order to inspect scripts, use bop_genscript_local
+# rather than bash_optparse_generate_script
 
 if [[ -n "${FUNCNAME[0]}" ]]
 then
@@ -45,6 +45,7 @@ if [[ "$BOP_LOCAL_INSPECT" == "true" ]]
 then
 	echo "$BASH_OPTPARSE_OUTPUT_SCRIPT"
 	unset BASH_OPTPARSE_IS_IN_FUNC
+	BASH_OPTPARSE_EARLY_RETURN="true"
 	$BASH_OPTPARSE_EXIT_CMD 0
 fi
 
