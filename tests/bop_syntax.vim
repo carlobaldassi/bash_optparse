@@ -24,7 +24,7 @@ syntax cluster bopBashVars      contains=shDerefSimple,shDeref
 syntax cluster bopBashContain   contains=shSubSh,shFunctionOne,shFunctionTwo
 
 
-syntax cluster bopSetLines	contains=bopSetReqVerL,bopSetWrapWL,bopSetAutoSOL,bopSetErrCL
+syntax cluster bopSetLines	contains=bopSetReqVerL,bopSetWrapWL,bopSetAutoSOL,bopSetOneDashLOL,bopSetErrCL
 
 
 syntax cluster bopCommentSpace	contains=bopTodo
@@ -73,6 +73,18 @@ syntax match   bopSetAutoSOQErr	contained +"[^"]*\([^"]*"\)\@!+ transparent cont
 syntax cluster bopSetAutoSOCont	contains=bopSetErrs,bopSetAutoSOArgs,@bopCommentItems
 syntax case ignore
 syntax match   bopSetAutoSOArgs	contained "\(TRUE\|FALSE\)"
+syntax case match
+
+syntax region  bopSetOneDashLOL	contained matchgroup=bopSetLabel start="^\s*\zsONE_DASH_LONG_OPTS\ze\s\+" skip="\\$" end="$" keepend transparent contains=bopSetErrs,bopSetOneDashLO1A,@bopCommentItems
+
+syntax match   bopSetOneDashLO1A	contained transparent "\S\+\ze\s*\($\|#\)"me=e-1 contains=@bopSetOneDashLOQNQ
+syntax cluster bopSetOneDashLOQNQ	contains=bopSetOneDashLOQ,bopSetOneDashLONQ,bopSetOneDashLOQErr
+syntax region  bopSetOneDashLOQ	contained matchgroup=bopQuotes start=+"+ end=+"+ transparent contains=@bopSetOneDashLOCont
+syntax match   bopSetOneDashLONQ	contained +[^"]\++ transparent contains=@bopSetOneDashLOCont
+syntax match   bopSetOneDashLOQErr	contained +"[^"]*\([^"]*"\)\@!+ transparent contains=bopSetErrs
+syntax cluster bopSetOneDashLOCont	contains=bopSetErrs,bopSetOneDashLOArgs,@bopCommentItems
+syntax case ignore
+syntax match   bopSetOneDashLOArgs	contained "\(TRUE\|FALSE\)"
 syntax case match
 
 syntax region  bopSetErrCL	contained matchgroup=bopSetLabel start="^\s*\zsERR_CODE_\(OPT_\(INVALID\|TYPE\|RANGE\)\|ARG_NUM\)\ze\s\+" skip="\\$" end="$" keepend transparent contains=bopSetErrs,bopSetErrC1A,@bopCommentItems
@@ -172,8 +184,9 @@ hi def link bopSetLabel		Label
 hi def link bopQuotes		Delimiter
 
 hi def link bopSetReqVerArgs	Number
-hi def link bopSetWrapWArgs	Number
+hi def link bopSetWrapWArgs 	Number
 hi def link bopSetAutoSOArgs	Number
+hi def link bopSetOneDashLOArgs	Number
 hi def link bopSetErrCArgs	Number
 hi def link bopTodo		Todo
 

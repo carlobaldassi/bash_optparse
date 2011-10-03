@@ -35,6 +35,7 @@ class BopSettings(object):
 	def __init__(self):
 		self.wrap_width = 80
 		self.auto_short_opts = True
+		self.one_dash_long_opts = False
 		self.in_function = False
 		if os.environ['BASH_OPTPARSE_IS_IN_FUNC'] == "true":
 			self.in_function = True
