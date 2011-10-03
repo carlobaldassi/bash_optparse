@@ -40,11 +40,30 @@ AM_PATH_PYTHON([3.0])
 AM_MAINTAINER_MODE
 
 AC_PROG_SED
+AC_PROG_EGREP
+
+AC_ARG_VAR(BASH_EXEC, [location of the bash executable])
+
+AC_PATH_PROG(BASH_EXEC, bash, , )
+
+if test "x$BASH_EXEC" == "x"
+then
+	AC_MSG_ERROR([cannot find bash. If it is installed, you may set the PATH or the BASH_EXEC variables to the install location.], 1)
+fi
+
+AC_MSG_CHECKING([bash version])
+bash_version=`$BASH_EXEC --version | $EGREP 'GNU bash, version' | $SED -e 's,.*version\s\+\(\S*\).*,\1,'`
+AC_MSG_RESULT($bash_version)
+
+AS_VERSION_COMPARE($bash_version, 4.0.0,
+	AC_MSG_ERROR([insufficient bash version $bash_version, at least 4.0.0 is required], 1),
+	, ,)
 
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
 doc/Makefile
+utils/Makefile
 ])
 
 AC_OUTPUT
