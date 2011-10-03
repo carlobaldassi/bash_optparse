@@ -525,6 +525,66 @@ as_tr_cpp="eval sed 'y%*$as_cr_letters%P$as_cr_LETTERS%;s%[^_$as_cr_alnum]%_%g'"
 # Sed expression to map a string onto a valid variable name.
 as_tr_sh="eval sed 'y%*+%pp%;s%[^_$as_cr_alnum]%_%g'"
 
+as_awk_strverscmp='
+  # Use only awk features that work with 7th edition Unix awk (1978).
+  # My, what an old awk you have, Mr. Solaris!
+  END {
+    while (length(v1) && length(v2)) {
+      # Set d1 to be the next thing to compare from v1, and likewise for d2.
+      # Normally this is a single character, but if v1 and v2 contain digits,
+      # compare them as integers and fractions as strverscmp does.
+      if (v1 ~ /^[0-9]/ && v2 ~ /^[0-9]/) {
+	# Split v1 and v2 into their leading digit string components d1 and d2,
+	# and advance v1 and v2 past the leading digit strings.
+	for (len1 = 1; substr(v1, len1 + 1) ~ /^[0-9]/; len1++) continue
+	for (len2 = 1; substr(v2, len2 + 1) ~ /^[0-9]/; len2++) continue
+	d1 = substr(v1, 1, len1); v1 = substr(v1, len1 + 1)
+	d2 = substr(v2, 1, len2); v2 = substr(v2, len2 + 1)
+	if (d1 ~ /^0/) {
+	  if (d2 ~ /^0/) {
+	    # Compare two fractions.
+	    while (d1 ~ /^0/ && d2 ~ /^0/) {
+	      d1 = substr(d1, 2); len1--
+	      d2 = substr(d2, 2); len2--
+	    }
+	    if (len1 != len2 && ! (len1 && len2 && substr(d1, 1, 1) == substr(d2, 1, 1))) {
+	      # The two components differ in length, and the common prefix
+	      # contains only leading zeros.  Consider the longer to be less.
+	      d1 = -len1
+	      d2 = -len2
+	    } else {
+	      # Otherwise, compare as strings.
+	      d1 = "x" d1
+	      d2 = "x" d2
+	    }
+	  } else {
+	    # A fraction is less than an integer.
+	    exit 1
+	  }
+	} else {
+	  if (d2 ~ /^0/) {
+	    # An integer is greater than a fraction.
+	    exit 2
+	  } else {
+	    # Compare two integers.
+	    d1 += 0
+	    d2 += 0
+	  }
+	}
+      } else {
+	# The normal case, without worrying about digits.
+	d1 = substr(v1, 1, 1); v1 = substr(v1, 2)
+	d2 = substr(v2, 1, 1); v2 = substr(v2, 2)
+      }
+      if (d1 < d2) exit 1
+      if (d1 > d2) exit 2
+    }
+    # Beware Solaris /usr/xgp4/bin/awk (at least through Solaris 10),
+    # which mishandles some comparisons of empty strings to integers.
+    if (length(v2)) exit 1
+    if (length(v1)) exit 2
+  }
+'
 
 test -n "$DJDIR" || exec 7<&0 </dev/null
 exec 6>&1
@@ -557,6 +617,9 @@ PACKAGE_URL=''
 ac_unique_file="src/bash_optparse.py"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+BASH_EXEC
+EGREP
+GREP
 SED
 MAINT
 MAINTAINER_MODE_FALSE
@@ -642,7 +705,8 @@ enable_maintainer_mode
 '
       ac_precious_vars='build_alias
 host_alias
-target_alias'
+target_alias
+BASH_EXEC'
 
 
 # Initialize some variables set by options.
@@ -1261,6 +1325,12 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
+
+Some influential environment variables:
+  BASH_EXEC   location of the bash executable
+
+Use these variables to override the choices made by `configure' or to help
+it to find libraries and programs with nonstandard names/locations.
 
 Report bugs to the package provider.
 _ACEOF
@@ -2525,6 +2595,204 @@ $as_echo "$ac_cv_path_SED" >&6; }
  SED="$ac_cv_path_SED"
   rm -f conftest.sed
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
+$as_echo_n "checking for grep that handles long lines and -e... " >&6; }
+if test "${ac_cv_path_GREP+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -z "$GREP"; then
+  ac_path_GREP_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in grep ggrep; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_GREP="$as_dir/$ac_prog$ac_exec_ext"
+      { test -f "$ac_path_GREP" && $as_test_x "$ac_path_GREP"; } || continue
+# Check for GNU ac_path_GREP and select it if it is found.
+  # Check for GNU $ac_path_GREP
+case `"$ac_path_GREP" --version 2>&1` in
+*GNU*)
+  ac_cv_path_GREP="$ac_path_GREP" ac_path_GREP_found=:;;
+*)
+  ac_count=0
+  $as_echo_n 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    $as_echo 'GREP' >> "conftest.nl"
+    "$ac_path_GREP" -e 'GREP$' -e '-(cannot match)-' < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_GREP_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_GREP="$ac_path_GREP"
+      ac_path_GREP_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_GREP_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_GREP"; then
+    as_fn_error $? "no acceptable grep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
+  fi
+else
+  ac_cv_path_GREP=$GREP
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_GREP" >&5
+$as_echo "$ac_cv_path_GREP" >&6; }
+ GREP="$ac_cv_path_GREP"
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for egrep" >&5
+$as_echo_n "checking for egrep... " >&6; }
+if test "${ac_cv_path_EGREP+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if echo a | $GREP -E '(a|b)' >/dev/null 2>&1
+   then ac_cv_path_EGREP="$GREP -E"
+   else
+     if test -z "$EGREP"; then
+  ac_path_EGREP_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in egrep; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_EGREP="$as_dir/$ac_prog$ac_exec_ext"
+      { test -f "$ac_path_EGREP" && $as_test_x "$ac_path_EGREP"; } || continue
+# Check for GNU ac_path_EGREP and select it if it is found.
+  # Check for GNU $ac_path_EGREP
+case `"$ac_path_EGREP" --version 2>&1` in
+*GNU*)
+  ac_cv_path_EGREP="$ac_path_EGREP" ac_path_EGREP_found=:;;
+*)
+  ac_count=0
+  $as_echo_n 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    $as_echo 'EGREP' >> "conftest.nl"
+    "$ac_path_EGREP" 'EGREP$' < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_EGREP_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_EGREP="$ac_path_EGREP"
+      ac_path_EGREP_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_EGREP_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_EGREP"; then
+    as_fn_error $? "no acceptable egrep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
+  fi
+else
+  ac_cv_path_EGREP=$EGREP
+fi
+
+   fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_EGREP" >&5
+$as_echo "$ac_cv_path_EGREP" >&6; }
+ EGREP="$ac_cv_path_EGREP"
+
+
+
+
+
+# Extract the first word of "bash", so it can be a program name with args.
+set dummy bash; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_BASH_EXEC+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $BASH_EXEC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BASH_EXEC="$BASH_EXEC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_BASH_EXEC="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+BASH_EXEC=$ac_cv_path_BASH_EXEC
+if test -n "$BASH_EXEC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BASH_EXEC" >&5
+$as_echo "$BASH_EXEC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+if test "x$BASH_EXEC" == "x"
+then
+	as_fn_error 1 "cannot find bash. If it is installed, you may set the PATH or the BASH_EXEC variables to the install location." "$LINENO" 5
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking bash version" >&5
+$as_echo_n "checking bash version... " >&6; }
+bash_version=`$BASH_EXEC --version | $EGREP 'GNU bash, version' | $SED -e 's,.*version\s\+\(\S*\).*,\1,'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $bash_version" >&5
+$as_echo "$bash_version" >&6; }
+
+as_arg_v1=$bash_version
+as_arg_v2=4.0.0
+awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
+case $? in #(
+  1) :
+    as_fn_error 1 "insufficient bash version $bash_version ;; #(
+  0) :
+    at least 4.0.0 is required" "$LINENO" 5  ;; #(
+  2) :
+     ;; #(
+  *) :
+     ;;
+esac
 
 ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile"
 
