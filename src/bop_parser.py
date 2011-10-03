@@ -539,10 +539,17 @@ class Parser(object):
 
 		short_opts_str = "".join(short_opts_strl)
 		long_opts_str = ", ".join(long_opts_strl)
-		one_dash_long_opts_str = ""
+
 		if (self.settings.one_dash_long_opts):
 			one_dash_long_opts_str = "-a "
-		outfile.write("PARAMETERS=$(getopt " + one_dash_long_opts_str + "-o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
+		else:
+			one_dash_long_opts_str = ""
+		if not self.settings.in_function:
+			name_command = "$(basename $0)"
+		else:
+			name_command = "${FUNCNAME[3]}"
+
+		outfile.write("PARAMETERS=$(getopt --name \"" + name_command + "\" " + one_dash_long_opts_str + "-o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
 		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "; }\n")
 		outfile.write("\n")
