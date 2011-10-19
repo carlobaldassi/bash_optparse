@@ -349,6 +349,21 @@ class InvalidBopAutoShortOpts(Base):
 	def __str__(self):
 		return mess(self.cnt, "AUTO_SHORT_OPTS must be TRUE or FALSE, " + str(self.value) + " given")
 
+class InvalidBopOneDashLongOptsLine(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "ONE_DASH_OPTS line requires 2 items, " + str(self.value) + " given")
+
+class InvalidBopOneDashLongOpts(Base):
+	def __init__(self, cnt, value):
+		Base.__init__(self, cnt)
+		self.value = value
+	def __str__(self):
+		return mess(self.cnt, "ONE_DASH_OPTS must be TRUE or FALSE, " + str(self.value) + " given")
+
+
 class InvalidBopInFunctionLine(Base):
 	def __init__(self, cnt, value):
 		Base.__init__(self, cnt)

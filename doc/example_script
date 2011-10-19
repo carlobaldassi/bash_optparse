@@ -59,21 +59,24 @@ SETTINGS_BEGIN
   # These settings control the global behaviour of bash_optparse.
   # All currently available settings are shown here.
 
-  REQUIRED_VERSION 1.1   # Use this to avoid weird problems (it will enforce version-checking, and \
-                           perhaps use fallbacks in the future if an old version is detected). \
-                           The syntax is 'major.minor'.
-  WRAP_WIDTH 80          # This controls the width of the auto-generated help screen. \
-                           The default is 80. The minimum is 30.
-  AUTO_SHORT_OPTS TRUE   # This controls whether short options are auto-generated or not. \
-                           The default is TRUE. Allowed values are TRUE or FALSE.
+  REQUIRED_VERSION 1.1     # Use this to avoid weird problems (it will enforce version-checking, and \
+                             perhaps use fallbacks in the future if an old version is detected). \
+                             The syntax is 'major.minor'.
+  WRAP_WIDTH 80            # This controls the width of the auto-generated help screen. \
+                             The default is 80. The minimum is 30.
+  AUTO_SHORT_OPTS TRUE     # This controls whether short options are auto-generated or not. \
+                             The default is TRUE. Allowed values are TRUE or FALSE.
+  ONE_DASH_LONG_OPTS FALSE # This controls whether long options are allowed to be passed \
+                             with a single dash (e.g. -version) rather than strictly two. \
+                             The default is FALSE. Allowed values are TRUE and FALSE.
 
-  ERR_CODE_OPT_INVALID 2 # This controls the exit/return code in case an invalid option is passed in \
-                           the command line. The default is 2.
-  ERR_CODE_OPT_TYPE 2    # Same as above, for when an argument of the wrong type is passed (e.g. if you \
-                           pass a string as argument to an option expecting an int). The default is 2.
-  ERR_CODE_OPT_RANGE 2   # Same as above, for when an option argument is out of range. The default is 2.
-  ERR_CODE_ARG_NUM 2     # Same as above, for when the wrong number of arguments is passed (too few or \
-                           too many). The default is 2.
+  ERR_CODE_OPT_INVALID 2   # This controls the exit/return code in case an invalid option is passed in \
+                             the command line. The default is 2.
+  ERR_CODE_OPT_TYPE 2      # Same as above, for when an argument of the wrong type is passed (e.g. if you \
+                             pass a string as argument to an option expecting an int). The default is 2.
+  ERR_CODE_OPT_RANGE 2     # Same as above, for when an option argument is out of range. The default is 2.
+  ERR_CODE_ARG_NUM 2       # Same as above, for when the wrong number of arguments is passed (too few or \
+                             too many). The default is 2.
 
 SETTINGS_END
 

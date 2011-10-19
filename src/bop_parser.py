@@ -119,6 +119,13 @@ class Parser(object):
 					except (NameError, SyntaxError):
 						raise err.InvalidBopAutoShortOpts(cnt, line[1])
 					test(isinstance(self.settings.auto_short_opts, bool), err.InvalidBopAutoShortOpts, (cnt, line[1]))
+				elif line[0] == "ONE_DASH_LONG_OPTS":
+					test(len(line) == 2, err.InvalidBopOneDashLongOptsLine, (cnt, len(line)))
+					try:
+						exec("self.settings.one_dash_long_opts = " + line[1].capitalize())
+					except (NameError, SyntaxError):
+						raise err.InvalidBopOneDashLongOpts(cnt, line[1])
+					test(isinstance(self.settings.one_dash_long_opts, bool), err.InvalidBopOneDashLongOpts, (cnt, line[1]))
 				elif line[0] == "IN_FUNCTION":
 					test(len(line) == 2, err.InvalidBopInFunctionLine, (cnt, len(line)))
 					try:
@@ -532,7 +539,17 @@ class Parser(object):
 
 		short_opts_str = "".join(short_opts_strl)
 		long_opts_str = ", ".join(long_opts_strl)
-		outfile.write("PARAMETERS=$(getopt -o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
+
+		if (self.settings.one_dash_long_opts):
+			one_dash_long_opts_str = "-a "
+		else:
+			one_dash_long_opts_str = ""
+		if not self.settings.in_function:
+			name_command = "$(basename $0)"
+		else:
+			name_command = "${FUNCNAME[3]}"
+
+		outfile.write("PARAMETERS=$(getopt --name \"" + name_command + "\" " + one_dash_long_opts_str + "-o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
 		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "; }\n")
 		outfile.write("\n")

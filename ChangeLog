@@ -1,3 +1,7 @@
+2011-10-03 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* New utility: generated script inspector
+	* New feature: one dash long opts setting
+
 2011-05-23 Carlo Baldassi  <carlobaldassi@gmail.com>
 	* Bugfix: fix crash with whitespace-only
 	  numeric ranges

@@ -8,6 +8,8 @@ What's new in version 1.1
 *) Enhanced flags:
    +) revertible default values
    +) allow alternate flags which revert the effect
+*) New setting allows long options with a single dash
+*) Added utility to inspect generated script
 
 Version 1.0 features
 --------------------
