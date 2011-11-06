@@ -123,21 +123,24 @@ OPTIONS_BEGIN
 #
 # Synopsis of OPTION lines:
 #
-# VARIABLE NAME    ARG    ARG    ARG             DEFAULT     DESCRIPTION
-# [,SHORT OPT]     TYPE   NAME   RANGE           VALUE
+# VARIABLE NAME    ARG     ARG    ARG             DEFAULT     DESCRIPTION
+# [,SHORT OPT]     TYPE    NAME   RANGE           VALUE
 
-  string_option_1  STRING choice "one|two|three" one         "A constrained STRING option"
-  string_option_2  STRING text   NONE            "some text" "An unconstrained STRING option"
-  int_option_1     INT    n      NONE            NONE        "An INT option (unbounded)"
-  int_option_2     INT    n      [-100:100]      0           "An INT option (bounded, no step)"
-  int_option_3     INT    n      [1:2:INF]       3           "An INT option (odd, lower bounded)"
-  int_option_4     INT    n      [-INF:-2:10]    6           "An INT option (even, upper bounded)"
-  float_option_1   FLOAT  x      [0:1[           5e-1        "A FLOAT option"
-  float_option_2   FLOAT  x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
-  float_option_3,f FLOAT  x      [0:0.05:1[      5e-1        "A FLOAT option with step"
-  flag_option,-    NONE   NONE   NONE            NONE        "A flag"
-  F                NONE   NONE   NONE            TRUE        "Another flag"
-  go|dont-go,n     NONE   NONE   NONE            FALSE       "A reversible flag"
+  string_option_1  STRING  choice "one|two|three" one         "A constrained STRING option"
+  string_option_2  STRING  text   NONE            "some text" "An unconstrained STRING option"
+  int_option_1     INT     n      NONE            NONE        "An INT option (unbounded, unset)"
+  int_option_2     INT     n      [-100:100]      0           "An INT option (bounded, no step)"
+  int_option_3     INT     n      [1:2:INF]       3           "An INT option (odd, lower bounded)"
+  int_option_4     INT     n      [-INF:-2:10]    6           "An INT option (even, upper bounded)"
+  float_option_1   FLOAT   x      [0:1[           5e-1        "A FLOAT option"
+  float_option_2   FLOAT   x      [0:1)           NONE        "A FLOAT option (same range as above, unset)"
+  float_option_3,f FLOAT   x      [0:0.05:1[      5e-1        "A FLOAT option with step"
+  flag_option,-    NONE    NONE   NONE            NONE        "A flag"
+  F                NONE    NONE   NONE            TRUE        "Another flag"
+  go|dont-go,n     NONE    NONE   NONE            FALSE       "A reversible flag"
+  multi_string     STRING+ choice "one|two|three" one         "Same as string-option-1, but can be given multiple times"
+  multi_int        INT+    n      NONE            NONE        "Same as int-option-1, but can be given multiple times"
+  multi_float      FLOAT+  x      [0:1[           5e-1        "Same as float-option-1, but can be given multiple times"
 
 # Notes about OPTION lines:
 #   *) The variable name is also used as the long option name (short if it has
@@ -165,6 +168,8 @@ OPTIONS_BEGIN
 #      three can have argument ranges and default values. INT and FLOAT types
 #      are also subject to type-checking. The floating point representation
 #      considered to be valid is that used by C (decimal values only).
+#      An optional '+' can be appended to STRING, INT and FLOAT to allow
+#      the option to be given more than once and have multiple values (see below).
 #   *) STRING arg_ranges are either NONE (or empty) or python regexp's which
 #      cover the whole string.
 #   *) Numerical (INT and FLOAT) arg_ranges are either NONE (or empty) or
@@ -180,11 +185,15 @@ OPTIONS_BEGIN
 #      the corresponding extreme is not considered to be part of
 #      the interval (as in conventional mathematical notation, except
 #      that INF is always out of the interval).
-#   *) Default values must always be within the given arg_range.
-#   *) Numerical options allow an empty default value (use "" or NONE), to be
-#      intended as "unset" (see int_option_1 or float_option_2 for an example).
-#      In such case, an empty string will exceptionally be accepted as argument
-#      from the command line.
+#   *) Default values must always be within the given arg_range, with the only
+#      exception of unset default values where allowed (see below).
+#   *) Numerical options and STRING+ options allow an empty default value
+#      (use "" or NONE), to be intended as "unset" (see int_option_1 or float_option_2
+#      for an example).
+#      In such case, arg_range will only be checked when the corresponding option
+#      is actually passed in the command line.
+#      The function 'check_is_set' can be used to determine whether the option
+#      is unset after parsing (see the code at the end of this file).
 #   *) Flags options (those with arg_type NONE or empty) declare variables which
 #      are (normally) set to "false" by default, and become "true" when the option is
 #      used (note that the value is lowercase).
@@ -201,11 +210,25 @@ OPTIONS_BEGIN
 #      (including the declaration/auto-generation/inhibition of corresponding short options),
 #      with some minor differences:
 #      +) no variable names are associated to them; therefore, you can use reserved variable
-#         names (not reserved option names, though)
+#         names, like e.g. 'default_var' (not reserved option names like 'help', though)
 #      +) you can use both underscores and dashes in the long names; underscores will be
 #         still be converted to dashes
 #      There's no need to provide a description for alternate options: it will be
 #      auto-generated.
+#   *) Normally, option values are stored in simple bash variables; when an option is
+#      passed more than once on the command line, the variable get overwritten and thus
+#      only the last value is retained. This behaviour can be changed by appending a '+' to
+#      STRING, INT and FLOAT type specifications (see options multi_string, multi_int and
+#      multi_float for examples).
+#      In that case, the value to the option will be stored in a bash array. If a
+#      default argument is provided, it is only assigned if the option is not passed
+#      to the command line, and it will be stored in the first element of the array
+#      (note: in bash arrays, the first element has index 0).
+#      This introduces another (subtle) difference between STRING and STRING+ variables:
+#      STRING variables whose default value is NONE are actually initalized to the empty
+#      string (and therefore the empty string must be allowed in the arg_range), while
+#      STRING+ variables whose default value is NONE are truly uninitialized (and their
+#      arg_range can possibly not include the empty string).
 #
 
 OPTIONS_END
@@ -245,25 +268,53 @@ EOF
 # have been initialized and checked for type or out-of-range errors.
 #
 # Furthermore, some auxiliary functions have been defined and can be used if needed:
-#   err_mess(1), abort(1 + 1), init_options(...), check_is_null(1), check_is_int(1),
+#   err_mess(1), abort(1 + 1), init_options(...), check_is_set(1), check_is_int(1),
 #   check_is_float(1), check_is_in_range(6)
 
 echo "Command line parsing terminated without errors."
 echo "This is the value of the variables:"
 echo 
-echo "From options:"
+echo "From single-valued options:"
 echo "  string_option_1 = $string_option_1"
 echo "  string_option_2 = $string_option_2"
-echo "  int_option_1 = $int_option_1"
+if check_is_set int_option_1
+then
+	echo "  int_option_1 = $int_option_1"
+else
+	echo "  int_option_1 = [UNASSIGNED]"
+fi
 echo "  int_option_2 = $int_option_2"
 echo "  int_option_3 = $int_option_3"
 echo "  int_option_4 = $int_option_4"
 echo "  float_option_1 = $float_option_1"
-echo "  float_option_2 = $float_option_2"
+if check_is_set float_option_2
+then
+	echo "  float_option_2 = $float_option_2"
+else
+	echo "  float_option_2 = [UNASSIGNED]"
+fi
 echo "  float_option_3 = $float_option_3"
 echo "  flag_option = $flag_option"
 echo "  F = $F"
 echo "  go = $go"
+
+echo
+echo "From multi-valued options:"
+echo "  multi_string was assigned ${#multi_string[@]} times:"
+for x in "${multi_string[@]}"
+do
+	echo "    $x"
+done
+echo "  multi_int was assigned ${#multi_int[@]} times:"
+for x in "${multi_int[@]}"
+do
+	echo "    $x"
+done
+echo "  multi_float was assigned ${#multi_float[@]} times:"
+for x in "${multi_float[@]}"
+do
+	echo "    $x"
+done
 
 echo
 echo "From arguments:"

@@ -415,7 +415,9 @@ class Parser(object):
 		(These are required by print_init_line)
 		"""
 		outfile.write("function init_options { for opt in \"$@\"; do set_option_from_default \"$opt\"; done; }\n")
+		outfile.write("function init_array_options { for opt in \"$@\"; do set_option_from_default_if_null \"$opt\"; done; }\n")
 		outfile.write("function set_option_from_default { eval \"$1=\\\"\\$default_$1\\\"\"; }\n")
+		outfile.write("function set_option_from_default_if_null { eval \"[[ \\${#$1[@]} -eq 0 ]] && $1=\\\"\\$default_$1\\\"\"; }\n")
 		outfile.write("\n")
 
 	def print_check_args_functions(self, outfile):
@@ -423,13 +425,13 @@ class Parser(object):
 		Prints out the bash check functions.
 		(These are required by print_check_optarg_block)
 		"""
-		outfile.write("function check_is_empty { eval \"[[ -z \\\"\\$$1\\\" ]]\"; }\n")
-		outfile.write("function check_is_int { eval \"[[ -n \\\"\\$$1\\\" ]] && echo \\\"\\$$1\\\" | egrep -q \\\"^[-+]?[[:digit:]]+\\$\\\"\"; }\n")
-		outfile.write("function check_is_float { eval \"[[ -n \\\"\\$$1\\\" ]] && echo \\\"\\$$1\\\" | egrep -q \\\"^[-+]?([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?\\$\\\"\"; }\n")
+		outfile.write("function check_is_set { eval \"[[ \${#$1[@]} -gt 0 ]]\"; }\n")
+		outfile.write("function check_is_int { [[ -n \"$1\" ]] && echo \"$1\" | egrep -q \"^[-+]?[[:digit:]]+$\"; }\n")
+		outfile.write("function check_is_float { [[ -n \"$1\" ]] && echo \"$1\" | egrep -q \"^[-+]?([[:digit:]]+(\.[[:digit:]]*)?|\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?$\"; }\n")
 		outfile.write("\n")
 		outfile.write("function check_is_in_range\n")
 		outfile.write("{\n")
-		outfile.write("\teval \"local x=\\$$1\"\n")
+		outfile.write("\tlocal x=\"$1\"\n")
 		outfile.write("\tlocal openlow=\"$2\"\n")
 		outfile.write("\tlocal lower=\"$3\"\n")
 		outfile.write("\tlocal step=\"$4\"\n")
@@ -504,12 +506,30 @@ class Parser(object):
 		(Call print_defaults before this function.)
 		"""
 		outfile.write("init_options \\\n")
-		for i, o in enumerate(self.opt_list):
-			outfile.write("\t" + o.name)
-			if i != len(self.opt_list) - 1:
-				outfile.write(" \\")
-			outfile.write("\n")
-		outfile.write("\n")
+		i = 0
+		for o in self.opt_list:
+			if (not o.is_array) and o.default_arg != None:
+				if i > 0:
+					outfile.write(" \\\n")
+				outfile.write("\t" + o.name)
+				i += 1
+		outfile.write("\n\n")
+
+	def print_init_arrays_line(self, outfile):
+		"""
+		Prints the bash line which initialises the default values for array-like variables.
+		(Requires the function init_array_options, which can be provided by print_init_functions.)
+		(Call print_defaults before this function.)
+		"""
+		outfile.write("init_array_options \\\n")
+		i = 0
+		for o in self.opt_list:
+			if o.is_array and o.default_arg != None:
+				if i > 0:
+					outfile.write(" \\\n")
+				outfile.write("\t" + o.name)
+				i += 1
+		outfile.write("\n\n")
 
 	def print_getopt_block(self, outfile):
 		"""
@@ -630,6 +650,8 @@ class Parser(object):
 		self.print_init_line(outfile)
 
 		self.print_getopt_block(outfile)
+
+		self.print_init_arrays_line(outfile)
 
 		self.print_check_optarg_block(outfile)
 

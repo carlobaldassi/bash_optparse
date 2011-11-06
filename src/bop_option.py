@@ -45,6 +45,7 @@ class BopOption(object):
 		self.force_noshort = False
 		self.short_only = False
 		self.arg_type = str(arg_type)
+		self.is_array = False
 		self.arg_name = str(arg_name)
 		self.arg_range = str(arg_range)
 		self.default_arg = str(default_arg)
@@ -104,6 +105,10 @@ class BopOption(object):
 		self.short_alt = check.is_empty_or_none(self.short_alt)
 
 		self.arg_type = self.arg_type.upper()
+
+		if self.arg_type in ["INT+", "FLOAT+", "STRING+"]:
+			self.arg_type = self.arg_type[:-1]
+			self.is_array = True
 
 		if self.arg_type == "INT":
 			self.parse_type_int(cnt)
@@ -230,12 +235,17 @@ class BopOption(object):
 			except ValueError:
 				raise invalid_error(cnt, self.default_arg)
 
+			self.default_arg = str(def_val);
+
 			test(check.is_in_range(def_val, self.arg_range, self.open_boundary), out_of_range_error, (cnt, def_val))
 
 	def set_string_default_val(self, cnt):
 		invalid_error = err.InvalidStringDefaultVal
 
-		test(check.is_in_string_range(self.default_arg, self.arg_range_compiled_regex), invalid_error, (cnt, self.default_arg))
+		if not (self.is_array and self.default_arg == ""):
+			test(check.is_in_string_range(self.default_arg, self.arg_range_compiled_regex), invalid_error, (cnt, self.default_arg))
+		else:
+			self.default_arg = None
 
 	def set_flag_default_val(self, cnt):
 		invalid_error = err.InvalidFlagDefaultVal
@@ -347,6 +357,8 @@ class BopOption(object):
 			else:
 				desc_token += ", no default value"
 			desc_token += ")"
+			if self.is_array:
+				desc_token += " [this option may be given more than once]"
 		return [opt_token, desc_token]
 
 	def gen_usage_line_alt(self):
@@ -374,8 +386,6 @@ class BopOption(object):
 		"""
 		if self.default_arg != None:
 			outfile.write("default_" + self.name + "=\"" + self.default_arg + "\"\n")
-		else:
-			outfile.write("default_" + self.name + "=\"\"\n")
 
 	def print_getopt_block(self, outfile):
 		"""
@@ -390,7 +400,10 @@ class BopOption(object):
 			outfile.write("--" + self.opt_name)
 		outfile.write(")\n")
 		if self.has_arg:
-			outfile.write("\t\t\t" + self.name + "=\"$2\"\n")
+			if self.is_array:
+				outfile.write("\t\t\t" + self.name + "[${#" + self.name + "[@]}]=\"$2\"\n")
+			else:
+				outfile.write("\t\t\t" + self.name + "=\"$2\"\n")
 			outfile.write("\t\t\tshift 2\n")
 		else:
 			if self.default_arg == "true":
@@ -424,36 +437,32 @@ class BopOption(object):
 		"""
 		Prints the bash check type line for the given option
 		"""
-		if self.has_arg:
-			if self.default_arg == None:
-				checknull_clause = "check_is_empty " + self.name + " || "
-			else:
-				checknull_clause = ""
+		if self.has_arg and self.arg_type in ["INT", "FLOAT"]:
+			outfile.write("for BASH_OPTPARSE_AUXVAR in \"${" + self.name + "[@]}\";\n")
+			outfile.write("do\n")
 
 			if self.arg_type == "INT":
-				outfile.write(checknull_clause + "check_is_int " + self.name + " || " + \
+				outfile.write("\tcheck_is_int \"$BASH_OPTPARSE_AUXVAR\" || " + \
 					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
-					" (should be an INT): $" + self.name + "\" " + \
+					" (should be an INT): $BASH_OPTPARSE_AUXVAR\" " + \
 					str(self.settings.err_code_opt_type) + \
 					self.abort_post(self.settings.err_code_opt_type) + "\n")
-				outfile.write("\n")
 			elif self.arg_type == "FLOAT":
-				outfile.write(checknull_clause + "check_is_float " + self.name + " || " + \
+				outfile.write("\tcheck_is_float \"$BASH_OPTPARSE_AUXVAR\" || " + \
 					self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
-					" (should be a FLOAT): $" + self.name + "\" " + \
+					" (should be a FLOAT): $BASH_OPTPARSE_AUXVAR\" " + \
 					str(self.settings.err_code_opt_type) + \
 					self.abort_post(self.settings.err_code_opt_type) + "\n")
-				outfile.write("\n")
+			outfile.write("done\n")
+			outfile.write("\n")
 
 	def print_check_optarg_range_block(self, outfile):
 		"""
 		Prints the bash check range line for the given option
 		"""
 		if self.has_arg and self.arg_range != None and self.arg_range != [None, None]:
-			if self.default_arg == None:
-				checknull_clause = "check_is_empty " + self.name + " || "
-			else:
-				checknull_clause = ""
+			outfile.write("for BASH_OPTPARSE_AUXVAR in \"${" + self.name + "[@]}\";\n")
+			outfile.write("do\n")
 
 			if self.arg_type == "INT" or self.arg_type == "FLOAT":
 				if self.open_boundary[0] == False:
@@ -478,24 +487,24 @@ class BopOption(object):
 				else:
 					srst = "0"
 					srst_out = ""
-				outfile.write(checknull_clause + \
-					"check_is_in_range " + self.name + " " + \
+				outfile.write( \
+					"\tcheck_is_in_range \"$BASH_OPTPARSE_AUXVAR\" " + \
 					"\"" + b0 + "\"" + " " + sr0 + " " + srst + " " + sr1 + " " + "\"" + b1 + "\"" + \
 					" || " + self.abort_pre() + "abort \"out of range argument to option " + \
-					self.opt_name + ": $" + self.name + \
+					self.opt_name + ": $BASH_OPTPARSE_AUXVAR" + \
 					" (range is " + b0 + sr0 + ":" + srst_out + sr1 + b1 + \
 					")\" " + str(self.settings.err_code_opt_range) + \
 					self.abort_post(self.settings.err_code_opt_range) + "\n")
-				outfile.write("\n")
 			elif self.arg_type == "STRING":
-				outfile.write("if ! bop_pygrep '^(" + self.arg_range + ")$' \"$" + self.name + "\"\n")
-				outfile.write("then\n")
-				outfile.write("\t" + self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
-					": $" + self.name + " (must match regex: /" + self.arg_range + "/)\" " + \
+				outfile.write("\tif ! bop_pygrep '^(" + self.arg_range + ")$' \"$BASH_OPTPARSE_AUXVAR\"\n")
+				outfile.write("\tthen\n")
+				outfile.write("\t\t" + self.abort_pre() + "abort \"Invalid argument to option " + self.opt_name + \
+					": $BASH_OPTPARSE_AUXVAR (must match regex: /" + self.arg_range + "/)\" " + \
 					str(self.settings.err_code_opt_range) + \
 					self.abort_post(self.settings.err_code_opt_range) + "\n")
-				outfile.write("fi\n")
-				outfile.write("\n")
+				outfile.write("\tfi\n")
 			else:
 				raise err.Bug(cnt, "")
+			outfile.write("done\n")
+			outfile.write("\n")
 

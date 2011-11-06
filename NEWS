@@ -1,3 +1,13 @@
+What's new in version 2.0
+-------------------------
+
+*) Extended syntax to allow options to be passed multiple times (the
+   value is then stored in a bash array).
+*) Numeric options whose default value is NONE (i.e. unset numeric
+   values) are now truly unset, and the empty string is thus no longer
+   accepted in the command line for those options).
+   Note: this slightly breaks backwards-compatibility (thus the version bump).
+
 What's new in version 1.1
 -------------------------
 

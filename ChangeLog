@@ -1,3 +1,12 @@
+2011-11-06 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* Modified: numeric options with NONE default
+	  value are truly unset (breaks back-compatibility!);
+	  the empty string is no longer accepted for
+	  those options in the command line
+	* New feature: allow options to be given multiple
+	  times (the value is then stored in a bash
+	  array)
+
 2011-10-03 Carlo Baldassi  <carlobaldassi@gmail.com>
 	* New utility: generated script inspector
 	* New feature: one dash long opts setting
