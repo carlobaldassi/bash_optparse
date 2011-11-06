@@ -29,7 +29,7 @@ function be_happy
 
 	. bash_optparse <<- EOF
 	SETTINGS_BEGIN
-	  REQUIRED_VERSION 1.1
+	  REQUIRED_VERSION 2.0
 	SETTINGS_END
 
 	DESCRIPTION_BEGIN
@@ -57,7 +57,7 @@ function be_sad
 
 	. bash_optparse <<- EOF
 	SETTINGS_BEGIN
-	  REQUIRED_VERSION 1.1
+	  REQUIRED_VERSION 2.0
 	SETTINGS_END
 
 	DESCRIPTION_BEGIN

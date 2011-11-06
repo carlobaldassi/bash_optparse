@@ -59,7 +59,7 @@ SETTINGS_BEGIN
   # These settings control the global behaviour of bash_optparse.
   # All currently available settings are shown here.
 
-  REQUIRED_VERSION 1.1     # Use this to avoid weird problems (it will enforce version-checking, and \
+  REQUIRED_VERSION 2.0     # Use this to avoid weird problems (it will enforce version-checking, and \
                              perhaps use fallbacks in the future if an old version is detected). \
                              The syntax is 'major.minor'.
   WRAP_WIDTH 80            # This controls the width of the auto-generated help screen. \
