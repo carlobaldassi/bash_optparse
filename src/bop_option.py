@@ -235,7 +235,7 @@ class BopOption(object):
 			except ValueError:
 				raise invalid_error(cnt, self.default_arg)
 
-			self.default_arg = str(def_val);
+			self.default_arg = self.default_arg.strip()
 
 			test(check.is_in_range(def_val, self.arg_range, self.open_boundary), out_of_range_error, (cnt, def_val))
 
