@@ -186,7 +186,7 @@ OPTIONS_BEGIN
 #      the interval (as in conventional mathematical notation, except
 #      that INF is always out of the interval).
 #   *) Default values must always be within the given arg_range, with the only
-#      exception of unset default values where allowed (see below).
+#      exception of unset default values, where allowed (see below).
 #   *) Numerical options and STRING+ options allow an empty default value
 #      (use "" or NONE), to be intended as "unset" (see int_option_1 or float_option_2
 #      for an example).
@@ -216,7 +216,7 @@ OPTIONS_BEGIN
 #      There's no need to provide a description for alternate options: it will be
 #      auto-generated.
 #   *) Normally, option values are stored in simple bash variables; when an option is
-#      passed more than once on the command line, the variable get overwritten and thus
+#      passed more than once on the command line, the variable gets overwritten and thus
 #      only the last value is retained. This behaviour can be changed by appending a '+' to
 #      STRING, INT and FLOAT type specifications (see options multi_string, multi_int and
 #      multi_float for examples).
