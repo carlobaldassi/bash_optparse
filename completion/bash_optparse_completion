@@ -1,0 +1,156 @@
+type quote_readline &> /dev/null || {
+quote_readline()
+{
+local t="${1//\/\\}"
+echo \'${t//\'/\'\\'\'}\' #'# Help vim syntax highlighting
+}
+}
+
+type _expand &> /dev/null || {
+# This function expands tildes in pathnames
+#
+_expand()
+{
+# FIXME: Why was this here?
+#[ "$cur" != "${cur%\}" ] && cur="$cur\"
+
+# expand ~username type directory specifications
+if [[ "$cur" == \~*/* ]]; then
+eval cur=$cur
+elif [[ "$cur" == \~* ]]; then
+cur=${cur#\~}
+COMPREPLY=( $( compgen -P '~' -u $cur ) )
+return ${#COMPREPLY[@]}
+fi
+}
+}
+
+type _filedir &> /dev/null || {
+_filedir()
+{
+local IFS=$'\t\n' xspec
+
+_expand || return 0
+
+local toks=( ) tmp
+while read -r tmp; do
+[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+done < <( compgen -d -- "$(quote_readline "$cur")" )
+
+if [[ "$1" != -d ]]; then
+xspec=${1:+"!*.$1"}
+while read -r tmp; do
+[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+done < <( compgen -f -X "$xspec" -- "$(quote_readline "$cur")" )
+fi
+
+COMPREPLY=( "${COMPREPLY[@]}" "${toks[@]}" )
+}
+}
+
+_bop_parse_optname()
+{
+	local optname="$1"
+	local has_arg="$2"
+	local optlong
+	local optshort
+	local arg_mod
+	[[ "$has_arg" == "true" ]] && arg_mod="="
+	if echo "$optname" | grep -q ","
+	then
+		optshort="$(echo "$optname" | sed "s/.*,//")"
+		optlong="$(echo "$optname" | sed "s/,.*//;s/_/-/g")"
+		if [[ "$optshort" != "-" ]]
+		then
+			echo "-${optshort} --${optlong}${arg_mod}"
+		else
+			echo "--${optlong}${arg_mod}"
+		fi
+	else
+		optlong="$(echo "$optname" | sed "s/_/-/g")"
+		echo "--${optlong}${arg_mod}"
+	fi
+}
+
+_bop_generator()
+{
+	local cmd="$1"
+	local filename="$(type -p "$cmd")"
+
+	# TODO : handle functions
+	[[ -z "$filename" ]] && return 0
+	#echo "isafile" > /dev/stderr
+	#echo "cmpr=${COMPREPLY[@]}" > /dev/stderr
+	file -b "$filename" | grep -q "\<text\>" || return 0
+	#echo "isatext" > /dev/stderr
+	local bop_delimiter_regex="^\s*\(\(\.\|source\)\s*bash_optparse\>\|BASH_OPTPARSE_BEGIN\>\)"
+	head --bytes 10K "$filename" | grep -q "$bop_delimiter_regex" || return 0
+	#echo "usesbop" > /dev/stderr
+
+        COMPREPLY=()
+
+	local opts_list="--help --version"
+	local in_bop="false"
+	local in_opts="false"
+	local line
+	while read line
+	do
+		if [[ $in_bop == "false" ]]
+		then
+			if echo "$line" | grep -q "$bop_delimiter_regex"
+			then
+				in_bop="true"
+			fi
+			continue
+		elif [[ $in_opts == "false" ]]
+		then
+			#TODO : improve this
+			if echo "$line" | grep -q "^\s\(EOF\|BASH_OPTPARSE_END\)\s*"
+			then
+				break
+			fi
+			if echo "$line" | grep -q "^\s*OPTIONS_BEGIN\s*$"
+			then
+				in_opts="true"
+			fi
+			continue
+		else
+			if echo "$line" | grep -q "^\s*OPTIONS_END\s*$"
+			then
+				break
+			elif echo "$line" | grep -q "^\s*\(#\|$\)"
+			then
+				continue
+			else
+				read optname opttype rest <<< "$line"
+				optname="$(echo "$optname" | sed "s/^\"//;s/\"$//")"
+				opttype="$(echo "$opttype" | sed "s/^\"//;s/\"$//")"
+				if [[ -z "$opttype" ]] || echo "$opttype" | grep -q -i "NONE"
+				then
+					if echo "$optname" | grep -q "|"
+					then
+						optmain="$(echo "$optname" | sed "s/|.*//")"
+						optalt="$(echo "$optname" | sed "s/.*|//")"
+						opts_list="$opts_list $(_bop_parse_optname "$optmain" "false")"
+						opts_list="$opts_list $(_bop_parse_optname "$optalt" "false")"
+					else
+						opts_list="$opts_list $(_bop_parse_optname "$optname" "false")"
+					fi
+				else
+					opts_list="$opts_list $(_bop_parse_optname "$optname" "true")"
+				fi
+			fi
+		fi
+	done < "$filename"
+
+        local cur=${COMP_WORDS[COMP_CWORD]}
+
+        if [[ "$cur" == -* ]];
+	then
+                COMPREPLY=( $( compgen -W "$opts_list" -- $cur ) )
+	else
+		_filedir
+        fi
+}
+# TODO : find a way to use '-o nospace' for options only?
+complete -D -o bashdefault -o default -F _bop_generator 
