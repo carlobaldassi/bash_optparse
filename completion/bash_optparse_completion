@@ -83,8 +83,18 @@ _bop_generator()
 	#echo "cmpr=${COMPREPLY[@]}" > /dev/stderr
 	file -b "$filename" | grep -q "\<text\>" || return 0
 	#echo "isatext" > /dev/stderr
-	local bop_delimiter_regex="^\s*\(\(\.\|source\)\s*bash_optparse\>\|BASH_OPTPARSE_BEGIN\>\)"
-	head --bytes 10K "$filename" | grep -q "$bop_delimiter_regex" || return 0
+	local bop_delimiter_regex="^\s*\(\(\.\|source\)\s*bash_optparse\s*<<-\?\|BASH_OPTPARSE_BEGIN\>\)"
+	[[ $(head --bytes 10K "$filename" | grep -c "$bop_delimiter_regex") -ge 1 ]] || return 0
+	local bop_delim_line="$(head --bytes 10K "$filename" | grep "$bop_delimiter_regex" | head -n 1)"
+	local bop_delim_mark
+	if echo "$bop_delim_line" | grep -q "^\s*BASH_OPTPARSE_BEGIN\>$"
+	then
+		bop_delim_mark="BASH_OPTPARSE_END"
+	else
+		bop_delim_mark="$(echo "$bop_delim_line" | sed "s/\s*#.*$//;s/.*<<-\?\s*//")"
+		[[ -z "$bop_delim_mark" ]] && { echo "uh?" >> /dev/stderr; return 0; }
+	fi
+	#echo "bop_delim_mark=$bop_delim_mark" >> /dev/stderr
 	#echo "usesbop" > /dev/stderr
 
         COMPREPLY=()
@@ -93,6 +103,7 @@ _bop_generator()
 	local in_bop="false"
 	local in_opts="false"
 	local line
+	local optname opttype optalt
 	while read line
 	do
 		if [[ $in_bop == "false" ]]
@@ -104,9 +115,9 @@ _bop_generator()
 			continue
 		elif [[ $in_opts == "false" ]]
 		then
-			#TODO : improve this
-			if echo "$line" | grep -q "^\s\(EOF\|BASH_OPTPARSE_END\)\s*"
+			if echo "$line" | grep -q "^\s*$bop_delim_mark\s*"
 			then
+				#echo "delim found" >> /dev/stderr
 				break
 			fi
 			if echo "$line" | grep -q "^\s*OPTIONS_BEGIN\s*$"
