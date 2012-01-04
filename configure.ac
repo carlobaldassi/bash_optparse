@@ -64,6 +64,7 @@ Makefile
 src/Makefile
 doc/Makefile
 utils/Makefile
+completion/Makefile
 ])
 
 AC_OUTPUT

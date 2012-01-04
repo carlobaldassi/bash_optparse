@@ -1,3 +1,7 @@
+2012-01-04 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* New utility: automatic option completion by
+	  readline for any script using bash_optparse
+
 2011-11-08 Carlo Baldassi  <carlobaldassi@gmail.com>
 	* Bugfix: fixed float default arg issue
 
