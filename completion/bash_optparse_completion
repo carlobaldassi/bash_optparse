@@ -117,10 +117,24 @@ _bop_parse_optname()
 	fi
 }
 
+_bop_special_gt()
+{
+        local cur=${COMP_WORDS[COMP_CWORD]}
+	_filedir_s
+	return 0
+}
+
 _bop_generator()
 {
 	local cmd="$1"
 	local filename="$(type -p "$cmd")"
+
+	# handle special case for command ">"
+	# (happens e.g. when using 'command &> file')
+	# seems to be both a readline bug ('&>' is not recognized)
+	# and a bash completion bug (the dynamic completion with return 124
+	# is not invoked whan the command is '>')
+	[[ "$cmd" == ">" ]] && { _bop_special_gt; return 0; }
 
 	# TODO : handle functions
 	[[ -z "$filename" ]] && { _enable_fake_completion "$cmd"; return 124; }
