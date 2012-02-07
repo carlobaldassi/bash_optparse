@@ -1,0 +1,65 @@
+#!/bin/bash
+
+SCRIPT_VERSION=0.1
+
+. bash_optparse << EOF
+
+SETTINGS_BEGIN
+  REQUIRED_VERSION 2.0
+SETTINGS_END
+
+DESCRIPTION_BEGIN
+  "Produce a template bash script for using bash_optparse."
+  "Writes to standard output."
+DESCRIPTION_END
+
+VERSION_BEGIN
+  Template generator for bash_optparse, version $SCRIPT_VERSION
+  Copyright (C) 2012 Carlo Baldassi
+  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+VERSION_END
+
+EOF
+
+cat << END_TEMPLATE
+#!/bin/bash
+
+. bash_optparse << EOF
+
+SETTINGS_BEGIN
+  REQUIRED_VERSION 2.0
+  WRAP_WIDTH 80
+  AUTO_SHORT_OPTS TRUE
+  ONE_DASH_LONG_OPTS FALSE
+  ERR_CODE_OPT_INVALID 2
+  ERR_CODE_OPT_TYPE 2
+  ERR_CODE_OPT_RANGE 2
+  ERR_CODE_ARG_NUM 2
+SETTINGS_END
+
+DESCRIPTION_BEGIN
+
+DESCRIPTION_END
+
+VERSION_BEGIN
+
+VERSION_END
+
+OPTIONS_BEGIN
+
+# VARIABLE NAME    ARG     ARG    ARG             DEFAULT     DESCRIPTION
+# [,SHORT OPT]     TYPE    NAME   RANGE           VALUE
+
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+
+# VARIABLE   IS        ARG
+# NAME       MANDATORY NAME
+
+ARGUMENTS_END
+
+EOF
+END_TEMPLATE

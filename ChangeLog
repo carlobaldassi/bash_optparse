@@ -1,3 +1,6 @@
+2012-02-07 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* New utility: template generator
+
 2012-01-04 Carlo Baldassi  <carlobaldassi@gmail.com>
 	* New utility: automatic option completion by
 	  readline for any script using bash_optparse
