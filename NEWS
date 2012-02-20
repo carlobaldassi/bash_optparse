@@ -7,6 +7,8 @@ What's new in version 2.0
    values) are now truly unset, and the empty string is thus no longer
    accepted in the command line for those options).
    Note: this slightly breaks backwards-compatibility (thus the version bump).
+*) Variables associated to arguments are now unset before parsing.
+   Note: this also slightly breaks backwards-compatibility
 *) Added bash completion facility for any script which uses bash_optparse.
 *) Added utility for template generation
 

@@ -1,3 +1,7 @@
+2012-02-20 Carlo Baldassi  <carlobaldassi@gmail.com>
+	* Modified: variables associated to arguments
+	  are now unset before parsing
+
 2012-02-07 Carlo Baldassi  <carlobaldassi@gmail.com>
 	* New utility: template generator
 

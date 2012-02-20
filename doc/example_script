@@ -257,8 +257,13 @@ ARGUMENTS_BEGIN
 #   *) The name in the last line may be 'VARARGS' or '@', in which case
 #      it will describe all the remaining arguments, which will go in
 #      the special bash variable '@'.
+#   *) Variables associated to non-VARARGS arguments are unset before
+#      parsing.
 #   *) Tip: use optional VARARGS if you want to disable the
 #      strict check about the number of arguments supplied
+#   *) Tip: in order to have a default value for arguments, you can use
+#      something like:
+#      check_is_set second_arg || second_arg="value"
 
 ARGUMENTS_END
 
@@ -319,11 +324,21 @@ done
 echo
 echo "From arguments:"
 echo "  first_arg = $first_arg"
-echo "  second_arg = $second_arg"
-echo "  third_arg = $third_arg"
+if check_is_set second_arg
+then
+	echo "  second_arg = $second_arg"
+else
+	echo "  second_arg = [UNASSIGNED]"
+fi
+if check_is_set third_arg
+then
+	echo "  third_arg = $third_arg"
+else
+	echo "  second_arg = [UNASSIGNED]"
+fi
 echo "  varargs: ${#@} extra args given:"
 for a in "$@"
 do
-        echo "    $a"
+	echo "    $a"
 done
-
+echo

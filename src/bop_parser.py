@@ -498,6 +498,15 @@ class Parser(object):
 		outfile.write("BASH_OPTPARSE_EARLY_RETURN=false\n\n")
 		for o in self.opt_list:
 			o.print_default_line(outfile)
+		outfile.write("\n")
+
+	def print_unset_args(self, outfile):
+		"""
+		Prints the bash lines which unset the arguments variables.
+		"""
+		for a in self.arg_list:
+			a.print_unset_line(outfile)
+		outfile.write("\n")
 
 	def print_init_line(self, outfile):
 		"""
@@ -638,6 +647,8 @@ class Parser(object):
 		self.print_usage(outfile)
 
 		self.print_defaults(outfile)
+
+		self.print_unset_args(outfile)
 
 		self.print_err_functions(outfile)
 
