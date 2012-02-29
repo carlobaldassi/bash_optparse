@@ -1,0 +1,32 @@
+Bash optparse completion rules
+==============================
+
+The file 'bash_optparse_completion' adds option autocompletion
+functionality to bash for any script which makes use of bash_optparse.
+
+This functionality is not activated by default when installing bash_optparse;
+to test it, just source the file with a command like:
+
+  source bash_optparse_completion
+
+To use it by default, copy the file in a system-level directory of
+bash completion scripts (e.g. /etc/bash_completion.d).
+
+Additional Notes
+----------------
+
+1) Performance is currently rather slow, especially for scripts with many
+   options.
+
+2) It currently works only with scripts, not functions
+
+3) Recognition of bash_optparse usage is heuristic; it may fail if you
+   use aliases, bash variables within the script, advanced constructs etc.
+   In case of doubts, stick to the example files in the `doc' directory.
+
+4) The script works by adding a default completion to bash via the
+   'complete -D' command, and using a fallback to default behaviour in case
+   bash_optparse usage is not detected. This should work fine most of the time;
+   however, if you did already override the default bash completion behaviour
+   with some other 'complete -D' command, it will either be overridden or it
+   will override the bash_optparse one, depending on which is called last.

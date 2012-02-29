@@ -1,0 +1,245 @@
+type quote_readline &> /dev/null || {
+	quote_readline()
+	{
+		local t="${1//\/\\}"
+		echo \'${t//\'/\'\\'\'}\' #'# Help vim syntax highlighting
+	}
+}
+
+type _expand &> /dev/null || {
+	# This function expands tildes in pathnames
+	#
+	_expand()
+	{
+		# FIXME: Why was this here?
+		#[ "$cur" != "${cur%\}" ] && cur="$cur\"
+
+		# expand ~username type directory specifications
+		if [[ "$cur" == \~*/* ]]
+		then
+			eval cur=$cur
+		elif [[ "$cur" == \~* ]]
+		then
+			cur=${cur#\~}
+			COMPREPLY=( $( compgen -P '~' -u $cur ) )
+			return ${#COMPREPLY[@]}
+		fi
+	}
+}
+
+type _filedir &> /dev/null || {
+	_filedir()
+	{
+		local IFS=$'\t\n' xspec
+
+		_expand || return 0
+
+		local toks=( ) tmp
+		while read -r tmp
+		do
+			[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+		done < <( compgen -d -- "$(quote_readline "$cur")" )
+
+		if [[ "$1" != -d ]]
+		then
+			xspec=${1:+"!*.$1"}
+			while read -r tmp
+			do
+				[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+			done < <( compgen -f -X "$xspec" -- "$(quote_readline "$cur")" )
+		fi
+
+		COMPREPLY=( "${COMPREPLY[@]}" "${toks[@]}" )
+	}
+}
+
+type _filedir_s &> /dev/null || {
+	_filedir_s()
+	{
+		local IFS=$'\t\n' xspec
+
+		_expand || return 0
+
+		local toks=( ) tmp
+		while read -r tmp
+		do
+			[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+		done < <( compgen -S " " -d -- "$(quote_readline "$cur")" )
+
+		if [[ "$1" != -d ]]
+		then
+			xspec=${1:+"!*.$1"}
+			while read -r tmp
+			do
+				[[ -n $tmp ]] && toks[${#toks[@]}]=$tmp
+			done < <( compgen -S " " -f -X "$xspec" -- "$(quote_readline "$cur")" )
+		fi
+
+		COMPREPLY=( "${COMPREPLY[@]}" "${toks[@]}" )
+	}
+}
+
+_enable_fake_completion()
+{
+	local cmd="$1"
+	complete -o bashdefault -o default -F _fake_bop_completion "$cmd"
+}
+
+_fake_bop_completion()
+{
+	local cmd="$1"
+	COMPREPLY=()
+	complete -r "$cmd"
+	return 0
+}
+
+_bop_parse_optname()
+{
+	local optname="$1"
+	local has_arg="$2"
+	local optlong
+	local optshort
+	local arg_mod=" "
+	[[ "$has_arg" == "true" ]] && arg_mod="="
+	if echo "$optname" | grep -q ","
+	then
+		optshort="$(echo "$optname" | sed "s/.*,//")"
+		optlong="$(echo "$optname" | sed "s/,.*//;s/_/-/g")"
+		if [[ "$optshort" != "-" ]]
+		then
+			echo "\"-${optshort}\" \"--${optlong}${arg_mod}\""
+		else
+			echo "\"--${optlong}${arg_mod}\""
+		fi
+	else
+		optlong="$(echo "$optname" | sed "s/_/-/g")"
+		echo "\"--${optlong}${arg_mod}\""
+	fi
+}
+
+_bop_special_gt()
+{
+        local cur=${COMP_WORDS[COMP_CWORD]}
+	_filedir_s
+	return 0
+}
+
+_bop_generator()
+{
+	local cmd="$1"
+	local filename="$(type -p "$cmd")"
+
+	# handle special case for command ">"
+	# (happens e.g. when using 'command &> file')
+	# seems to be both a readline bug ('&>' is not recognized)
+	# and a bash completion bug (the dynamic completion with return 124
+	# is not invoked whan the command is '>')
+	[[ "$cmd" == ">" ]] && { _bop_special_gt; return 0; }
+
+	# TODO : handle functions
+	[[ -z "$filename" ]] && { _enable_fake_completion "$cmd"; return 124; }
+	#echo "isafile" > /dev/stderr
+	file -b "$filename" | grep -q "\<text\>" || { _enable_fake_completion "$cmd"; return 124; }
+	#echo "isatext" > /dev/stderr
+	local bop_delimiter_regex="^\s*\(\(\.\|source\)\s*bash_optparse\s*<<-\?\|BASH_OPTPARSE_BEGIN\>\)"
+	[[ $(head --bytes 10K "$filename" | grep -c "$bop_delimiter_regex") -ge 1 ]] || { _enable_fake_completion "$cmd"; return 124; }
+	local bop_delim_line="$(head --bytes 10K "$filename" | grep "$bop_delimiter_regex" | head -n 1)"
+	local bop_delim_mark
+	if echo "$bop_delim_line" | grep -q "^\s*BASH_OPTPARSE_BEGIN\>$"
+	then
+		bop_delim_mark="BASH_OPTPARSE_END"
+	else
+		bop_delim_mark="$(echo "$bop_delim_line" | sed "s/\s*#.*$//;s/.*<<-\?\s*//")"
+		[[ -z "$bop_delim_mark" ]] && { echo "uh?" >> /dev/stderr; _enable_fake_completion "$cmd"; return 124; }
+	fi
+	#echo "bop_delim_mark=$bop_delim_mark" >> /dev/stderr
+	#echo "usesbop" > /dev/stderr
+
+        COMPREPLY=()
+
+	local opts_list="\"--help \" \"--version \""
+	local in_bop="false"
+	local in_opts="false"
+	local line
+	local optname opttype optalt
+	while read line
+	do
+		if [[ $in_bop == "false" ]]
+		then
+			if echo "$line" | grep -q "$bop_delimiter_regex"
+			then
+				in_bop="true"
+			fi
+			continue
+		elif [[ $in_opts == "false" ]]
+		then
+			if echo "$line" | grep -q "^\s*$bop_delim_mark\s*"
+			then
+				#echo "delim found" >> /dev/stderr
+				break
+			fi
+			if echo "$line" | grep -q "^\s*OPTIONS_BEGIN\s*$"
+			then
+				in_opts="true"
+			fi
+			continue
+		else
+			if echo "$line" | grep -q "^\s*OPTIONS_END\s*$"
+			then
+				break
+			elif echo "$line" | grep -q "^\s*\(#\|$\)"
+			then
+				continue
+			else
+				read optname opttype rest <<< "$line"
+				optname="$(echo "$optname" | sed "s/^\"//;s/\"$//")"
+				opttype="$(echo "$opttype" | sed "s/^\"//;s/\"$//")"
+				if [[ -z "$opttype" ]] || echo "$opttype" | grep -q -i "NONE"
+				then
+					if echo "$optname" | grep -q "|"
+					then
+						optmain="$(echo "$optname" | sed "s/|.*//")"
+						optalt="$(echo "$optname" | sed "s/.*|//")"
+						opts_list="$opts_list $(_bop_parse_optname "$optmain" "false")"
+						opts_list="$opts_list $(_bop_parse_optname "$optalt" "false")"
+					else
+						opts_list="$opts_list $(_bop_parse_optname "$optname" "false")"
+					fi
+				else
+					opts_list="$opts_list $(_bop_parse_optname "$optname" "true")"
+				fi
+			fi
+		fi
+	done < "$filename"
+
+        local cur=${COMP_WORDS[COMP_CWORD]}
+
+        if [[ "$cur" == -* ]];
+	then
+                #COMPREPLY=( $( compgen -W "$opts_list" -- $cur ) )
+		# TODO : use quoting instead of this loop + ugly hacks?
+		crind=0
+		while read tok
+		do
+			COMPREPLY[crind]="${tok%=}"
+			let crind++
+		done < <(compgen -W "$opts_list" -- "$cur" | sed "s/.*/&=/")
+	else
+		# use the version with a space appended at the end
+		_filedir_s
+        fi
+}
+
+#NOTE: instead of using the '-o bashdefault -o default' options
+#      which inherit the '-o nospace' option (we don't want this)
+#      we use the following trick:
+#      1) we define a default which looks for bash_optparse use
+#      2) if that fails, we define a fake completion and return 124,
+#         so that the fake completion is now matched instead of the
+#         default (see _enable_fake_completion and _fake_bop_completion)
+#      3) the fake completion just disables iteself and fails; since
+#         it's declared with the '-o bashdefault -o default' but not
+#         with '-o nospace', the fallback behaves just like normal
+#         completion
+
+complete -D -o nospace -F _bop_generator 

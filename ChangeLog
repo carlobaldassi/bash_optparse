@@ -1,8 +1,42 @@
+2012-02-29 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* New release: version 2.0.0
+
+2012-02-20 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Modified: variables associated to arguments
+	  are now unset before parsing
+
+2012-02-07 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* New utility: template generator
+
+2012-01-04 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* New utility: automatic option completion by
+	  readline for any script using bash_optparse
+
+2011-11-08 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Bugfix: fixed float default arg issue
+
+2011-11-06 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Modified: numeric options with NONE default
+	  value are truly unset (breaks back-compatibility!);
+	  the empty string is no longer accepted for
+	  those options in the command line
+	* New feature: allow options to be given multiple
+	  times (the value is then stored in a bash
+	  array)
+
 2011-10-03 Carlo Baldassi  <carlobaldassi@gmail.com>
+
 	* New utility: generated script inspector
 	* New feature: one dash long opts setting
 
 2011-05-23 Carlo Baldassi  <carlobaldassi@gmail.com>
+
 	* Bugfix: fix crash with whitespace-only
 	  numeric ranges
 

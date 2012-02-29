@@ -47,6 +47,12 @@ class BopArgument(object):
 		test(check.var_name_is_reserved(self.name), err.ReservedVarName, (cnt, self.name))
 		test(isinstance(self.mandatory, bool), err.NotBoolean, (cnt, self.mandatory))
 		test(check.optarg_name(self.arg_name), err.InvalidArgName, (cnt, self.arg_name))
+	
+	def print_unset_line(self, outfile):
+		"""
+		Prints the bash line which unsets the argument value
+		"""
+		outfile.write("unset " + self.name + "\n")
 
 
 class BopVararg(object):

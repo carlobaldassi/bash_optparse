@@ -119,10 +119,10 @@ syntax region  bopOptL1		contained matchgroup=bopOptName start=+^\s*\(help\>\|ve
 syntax region  bopOptL1Alt	contained matchgroup=bopOptName start=+^\s*\(help\>\|version\>\|default_\|BASH_OPTPARSE_\u*\>\)\@!\a\(\a\|\d\|_\)*\(,\(-\|\a\)\)\?|\(help\>\|version\>\)\@!\a\(\a\|\d\|[-_]\)*\(,\(-\|\a\)\)\?\ze\s\++ skip="\\$" end="$" contains=bopOptErr,bopOptL2N,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
 
 syntax case ignore
-syntax region  bopOptL2S	contained matchgroup=bopOptType start=+\s*\("\s*"\)*\(STRING\|"STRING"\)\("\s*"\)*\s\++ skip="\\$" end="$" contains=bopOptL3S,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
-syntax region  bopOptL2F	contained matchgroup=bopOptType start=+\s*\("\s*"\)*\(FLOAT\|"FLOAT"\)\("\s*"\)*\s\++ skip="\\$" end="$" contains=bopOptL3F,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
-syntax region  bopOptL2I	contained matchgroup=bopOptType start=+\s*\("\s*"\)*\(INT\|"INT"\)\("\s*"\)*\s\++ skip="\\$" end="$" contains=bopOptL3I,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
-syntax region  bopOptL2N	contained matchgroup=bopOptType start=+\s*\("\s*"\)*\(NONE\|""\|"NONE"\)\("\s*"\)*\s\++ skip="\\$" end="$" contains=bopOptL3N,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL2S	contained matchgroup=bopOptType start=-\s*\("\s*"\)*\(STRING+\?\|"\s*STRING+\?\s*"\)\("\s*"\)*\s\+- skip="\\$" end="$" contains=bopOptL3S,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL2F	contained matchgroup=bopOptType start=-\s*\("\s*"\)*\(FLOAT+\?\|"\s*FLOAT+\?\s*"\)\("\s*"\)*\s\+- skip="\\$" end="$" contains=bopOptL3F,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL2I	contained matchgroup=bopOptType start=-\s*\("\s*"\)*\(INT+\?\|"\s*INT+\?\s*"\)\("\s*"\)*\s\+- skip="\\$" end="$" contains=bopOptL3I,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
+syntax region  bopOptL2N	contained matchgroup=bopOptType start=-\s*\("\s*"\)*\(NONE\|""\|"NONE"\)\("\s*"\)*\s\+- skip="\\$" end="$" contains=bopOptL3N,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
 
 syntax region  bopOptL3S	contained matchgroup=bopOptAName start=+\s*\zs\("\s\)\@!\("\(\\.\|[^\\"]\)*"\|\(\\.\|[^\\"[:space:]]\)\+\)\++ skip="\\$" end="$" contains=bopOptL4S,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems
 syntax region  bopOptL3F	contained matchgroup=bopOptAName start=+\s*\zs\("\(\\.\|[^\\"]\)*"\|\(\\.\|[^\\"[:space:]]\)\+\)\++ skip="\\$" end="$" contains=bopOptL4F0,bopOptL4F1,bopOptL4F2,bopOptErr,bopOptSpecial,bopOptSkipLB,bopGlobalKeywords,@bopCommentItems

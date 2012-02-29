@@ -3,19 +3,23 @@ an advanced command line
 parsing system for Bash
 ========================
 
-Copyright (C) 2011 Carlo Baldassi <carlobaldassi@gmail.com>
+Copyright (C) 2011-2012 Carlo Baldassi <carlobaldassi@gmail.com>
 
+This program is intended as an advanced replacement of getopt
+for bash.  Its goals are to improve the simplicity, clarity and
+ease of maintenance in the definition of command line parsing rules,
+while at the same time adding many additional features, automations
+and more.
 
-This program brings into bash a method for parsing the
-command line which is somehow similar in spirit to python's
-optparse, or boost::program_options or others, i.e. it
-provides a framework in which the program options and
-arguments are described in a compact format and passed to
-bash_optparse, which in turn produces a portion of bash
-script which performs the parsing, sets default values,
-implements dynamic checks for type and range of the
-variables, auto-generates a nicely formatted usage()
-function etc.
+It is somehow similar in spirit to python's optparse, or
+boost::program_options or others, i.e. it provides a framework
+in which the program options and arguments are described in a
+compact format, leaving to bash_optparse all the work of performing
+parsing, setting default values, implementing dynamic type checks
+and range checks over the value of the variables, auto-generating
+a nicely formatted help screen etc.
+
+Furthermore, it can be integrated in bash readline completion.
 
 The typical usage in a script could be something like this:
 
@@ -29,20 +33,24 @@ ARGUMENTS_BEGIN
 ARGUMENTS_END
 EOF
 
-The OPTION line in the example describes a long option named
---perc, associated to a varaible of the same name, of type
-FLOAT, whose range is between 0 and 100, and which defaults
-to 50. A short option -p is also automatically added as an
-alias to the long option. The corresponding help line in the
-auto-generated usage output would be:
+The line in the OPTIONS block in the example describes a long
+option named --perc, associated to a varaible of the same name
+($perc), of type FLOAT, whose range is between 0 and 100, and
+which defaults to 50. A short option -p is also automatically
+added as an alias to the long option. Calling the script with
+the (automatically added) --help option, one would get a
+corresponding auto-generated help line:
 
   -p, --perc <x>  Select percentage (<x>=float in [0.0:100.0],
                   default=50)
 
-The ARGUMENT line describes how to pass an optional argument,
-which will be stored in the variable $infile.
+The line in the ARGUMENTS block line describes how to pass an
+optional argument, which will be stored in the variable $infile.
 
 See `example_script_simple', `example_functions' and
 `example_script' in the `doc' directory for more information.
 The explanation of the syntax can be found in the comments to the
 `example_script' code.
+
+Also, see the `README' file in the `completion' directory for
+information about the integrtion with bash completion.
