@@ -9,8 +9,8 @@ dnl These three define the version number
 dnl the first two used for API
 dnl the last one for bugfixes only
 m4_define([proj_major_version], [2])
-m4_define([proj_minor_version], [0])
-m4_define([proj_micro_version], [0])
+m4_define([proj_minor_version], [1])
+m4_define([proj_micro_version], [0unstable])
 
 m4_define([proj_version], [proj_major_version.proj_minor_version.proj_micro_version])
 
