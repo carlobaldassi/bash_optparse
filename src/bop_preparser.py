@@ -65,7 +65,7 @@ class LinePreParser(object):
 				has_quoting = False
 			elif c.isspace() and not in_quote and not in_escape and in_between:
 				pass
-			elif c == self.comment_char and in_between:
+			elif c == self.comment_char and not in_quote and not in_escape:
 				if len(curr_strl) > 0:
 					outstr = "".join(curr_strl)
 					if (not has_quoting) and outstr.upper() == "NONE":
