@@ -384,8 +384,19 @@ class BopOption(object):
 		"""
 		Prints the bash line which initialises the default values
 		"""
+		if not self.settings.in_function:
+			scope = ""
+		else:
+			scope = "local "
 		if self.default_arg != None:
-			outfile.write("default_" + self.name + "=\"" + self.default_arg + "\"\n")
+			outfile.write(scope + "default_" + self.name + "=\"" + self.default_arg + "\"\n")
+
+	def print_local_line(self, outfile):
+		"""
+		Prints the bash line which declares the variables as local
+		(only called when in a function)
+		"""
+		outfile.write("local " + self.name + "\n")
 
 	def print_getopt_block(self, outfile):
 		"""

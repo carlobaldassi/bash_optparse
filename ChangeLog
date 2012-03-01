@@ -1,3 +1,16 @@
+2012-03-01 Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Bugfix: fixed comment parsing (no need for
+	  whitespace before comment)
+	* Bugfix: use local variables when called
+	  from functions
+	* Bugfix: use local variables and better
+	  variable names within aux functions
+	* Bugfix: set EARLY_RETURN and RETURN_VAL in
+	  all cases when aborting
+	* Bugfix: fix reported names in some error
+	  messages
+
 2012-02-29 Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* New release: version 2.0.0
