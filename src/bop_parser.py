@@ -405,8 +405,17 @@ class Parser(object):
 			name_command = "$(basename $0)"
 		else:
 			name_command = "${FUNCNAME[3]}"
+
 		outfile.write("function err_mess { echo \"" + name_command + ": error: $1\" >> /dev/stderr; }\n")
-		outfile.write("function abort { local outval=\"$2\"; err_mess \"$1\"; [[ -n \"$outval\" ]] || outval=2; exit $outval; }\n")
+		outfile.write("\n")
+
+		outfile.write("function abort\n")
+		outfile.write("{\n")
+		outfile.write("\tlocal BASH_OPTPARSE_OUTVAL=\"$2\"\n")
+		outfile.write("\techo \"" + name_command + ": error: $1\" >> /dev/stderr\n")
+		outfile.write("\t[[ -n \"$BASH_OPTPARSE_OUTVAL\" ]] || BASH_OPTPARSE_OUTVAL=2\n")
+		outfile.write("\texit $BASH_OPTPARSE_OUTVAL\n")
+		outfile.write("}\n")
 		outfile.write("\n")
 
 	def print_init_functions(self, outfile):
@@ -414,8 +423,26 @@ class Parser(object):
 		Prints out the bash options initialisation functions.
 		(These are required by print_init_line)
 		"""
-		outfile.write("function init_options { for opt in \"$@\"; do set_option_from_default \"$opt\"; done; }\n")
-		outfile.write("function init_array_options { for opt in \"$@\"; do set_option_from_default_if_null \"$opt\"; done; }\n")
+		outfile.write("function init_options\n")
+		outfile.write("{\n")
+		outfile.write("\tlocal BASH_OPTPARSE_OPT\n")
+		outfile.write("\tfor BASH_OPTPARSE_OPT in \"$@\"\n")
+		outfile.write("\tdo\n")
+		outfile.write("\t\tset_option_from_default \"$BASH_OPTPARSE_OPT\"\n")
+		outfile.write("\tdone\n")
+		outfile.write("}\n")
+		outfile.write("\n")
+
+		outfile.write("function init_array_options\n")
+		outfile.write("{\n")
+		outfile.write("\tlocal BASH_OPTPARSE_OPT\n")
+		outfile.write("\tfor BASH_OPTPARSE_OPT in \"$@\"\n")
+		outfile.write("\tdo\n")
+		outfile.write("\t\tset_option_from_default_if_null \"$BASH_OPTPARSE_OPT\"\n")
+		outfile.write("\tdone\n")
+		outfile.write("}\n")
+		outfile.write("\n")
+
 		outfile.write("function set_option_from_default { eval \"$1=\\\"\\$default_$1\\\"\"; }\n")
 		outfile.write("function set_option_from_default_if_null { eval \"[[ \\${#$1[@]} -eq 0 ]] && $1=\\\"\\$default_$1\\\"\"; }\n")
 		outfile.write("\n")
@@ -495,9 +522,26 @@ class Parser(object):
 		Prints the bash lines which define the default values.
 		(Use before print_init_line.)
 		"""
-		outfile.write("BASH_OPTPARSE_EARLY_RETURN=false\n\n")
+
+		if not self.settings.in_function:
+			scope = ""
+		else:
+			scope = "local "
+		outfile.write(scope + "BASH_OPTPARSE_EARLY_RETURN=false\n\n")
 		for o in self.opt_list:
 			o.print_default_line(outfile)
+		outfile.write("\n")
+
+	def print_locals(self, outfile):
+		"""
+		Prints the bash lines which declare the variables as local
+		in case we're in a function.
+		(Use before print_init_line.)
+		"""
+		if not self.settings.in_function:
+			return
+		for o in self.opt_list:
+			o.print_local_line(outfile)
 		outfile.write("\n")
 
 	def print_unset_args(self, outfile):
@@ -573,16 +617,18 @@ class Parser(object):
 			one_dash_long_opts_str = "-a "
 		else:
 			one_dash_long_opts_str = ""
+
 		if not self.settings.in_function:
 			name_command = "$(basename $0)"
 		else:
-			name_command = "${FUNCNAME[3]}"
+			name_command = "${FUNCNAME[2]}"
+			outfile.write("local BASH_OPTPARSE_PARAMETERS\n")
 
-		outfile.write("PARAMETERS=$(getopt --name \"" + name_command + "\" " + one_dash_long_opts_str + "-o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
+		outfile.write("BASH_OPTPARSE_PARAMETERS=$(getopt --name \"" + name_command + "\" " + one_dash_long_opts_str + "-o \"" + short_opts_str + "\" -l \"" + long_opts_str + "\" -- \"$@\")\n")
 		outfile.write("\n")
-		outfile.write("[ $? -ne 0 ] && { usage_brief; " + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "; }\n")
+		outfile.write("[[ $? -ne 0 ]] && { usage_brief; " + self.exit_command + " " + str(self.settings.err_code_opt_invalid) + "; }\n")
 		outfile.write("\n")
-		outfile.write("eval set -- \"$PARAMETERS\"\n")
+		outfile.write("eval set -- \"$BASH_OPTPARSE_PARAMETERS\"\n")
 		outfile.write("\n")
 		outfile.write("while true\n")
 		outfile.write("do\n")
@@ -635,6 +681,10 @@ class Parser(object):
 		each option.
 		(Requires print_check_args_functions.)
 		"""
+		if self.settings.in_function:
+			outfile.write("local BASH_OPTPARSE_AUXVAR\n")
+			outfile.write("\n")
+
 		for o in self.opt_list:
 			o.print_check_optarg_type_block(outfile)
 			o.print_check_optarg_range_block(outfile)
@@ -647,6 +697,8 @@ class Parser(object):
 		self.print_usage(outfile)
 
 		self.print_defaults(outfile)
+
+		self.print_locals(outfile)
 
 		self.print_unset_args(outfile)
 
