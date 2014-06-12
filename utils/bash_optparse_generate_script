@@ -44,6 +44,7 @@ while [[ $parse_command == "true" ]]
 do
 	case "$(type -t "$1")" in
 		function|file)
+                        echo "QUI!!!"
 			parse_command="false"
 			;;
 		alias)
@@ -62,6 +63,9 @@ do
 			;;
 	esac
 done
+
+echo "<<<>>> GENONLY: $BASH_OPTPARSE_GENERATE_ONLY" >> tmp.txt
+echo "<<<>>> EXECUTING: $@" >> tmp.txt
 
 "$@"
 
