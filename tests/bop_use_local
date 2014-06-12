@@ -13,7 +13,7 @@
 # In order to inspect scripts, use bop_genscript_local
 # rather than bash_optparse_generate_script
 
-if [[ -n "${FUNCNAME[0]}" ]]
+if [[ "${#FUNCNAME[0]}" -gt 0 ]]
 then
 	local BASH_OPTPARSE_IS_IN_FUNC="true"
 	local BASH_OPTPARSE_EXIT_CMD="return"
@@ -77,4 +77,4 @@ BASH_OPTPARSE_RETURN_VAL=$?
 
 unset BASH_OPTPARSE_IS_IN_FUNC BASH_OPTPARSE_OUTPUT_SCRIPT
 
-[[ -n "${FUNCNAME[0]}" ]] && return $BASH_OPTPARSE_RETURN_VAL
+[[ "${#FUNCNAME[@]}" -gt 0 ]] && return $BASH_OPTPARSE_RETURN_VAL
