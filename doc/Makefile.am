@@ -1,10 +1,12 @@
 ## Process this file with automake to produce Makefile.in
 
-doc_SCRIPTS = \
+bopdocdir=$(docdir)
+
+bopdoc_SCRIPTS = \
 	example_script_simple \
 	example_script
 
-doc_DATA = \
+bopdoc_DATA = \
 	README
 
-EXTRA_DIST = $(doc_SCRIPTS) $(doc_DATA)
+EXTRA_DIST = $(bopdoc_SCRIPTS) $(bopdoc_DATA)
