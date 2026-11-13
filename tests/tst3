@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. bash_optparse << EOF
+SETTTINGS_BEGIN
+OPTIONS_BEGIN
+  perc FLOAT p [0:100] 50 "Select percentage"
+OPTIONS_END
+EOF

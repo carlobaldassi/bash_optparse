@@ -1,0 +1,9 @@
+function check_option_range
+{
+	eval "[[ \"$2\" != \"None\" ]] && [[ \"\$(echo \"\$$1\" | gawk -v l=$2 '(\$1 < l) {print 1}')\" == 1 ]] && return 1"
+	eval "[[ \"$3\" != \"None\" ]] && [[ \"\$(echo \"\$$1\" | gawk -v l=$3 '(\$1 > l) {print 1}')\" == 1 ]] && return 1"
+	echo "[[ -n \"$4\" ]] && [[ \"\$(echo \"$4\" | gawk '{if ($1 > 0) {print 1}}')\" == 1 ]] && [[ \"\$(echo \"\$$1\" | gawk -v l=$2 -v s=$4 '((\$1 - l) % s != 0) {print 1}')\" == 1 ]] && return 1"
+	eval "[[ -n \"$4\" ]] && [[ \"\$(echo \"$4\" | gawk '{if ($1 > 0) {print 1}}')\" == 1 ]] && [[ \"\$(echo \"\$$1\" | gawk -v l=$2 -v s=$4 '((\$1 - l) % s != 0) {print 1}')\" == 1 ]] && return 1"
+	eval "[[ -n \"$4\" ]] && [[ \"\$(echo \"$4\" | gawk '{if ($1 < 0) {print 1}}')\" == 1 ]] && [[ \"\$(echo \"\$$1\" | gawk -v l=$3 -v s=$4 '((l - \$1) % s != 0) {print 1}')\" == 1 ]] && return 1"
+	return 0
+}

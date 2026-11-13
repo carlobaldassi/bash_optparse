@@ -1,0 +1,57 @@
+# Bash optparse
+# Copyright (C) 2011 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the Licence, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org.licences/>.
+
+
+
+# This script is a wrapper to the python script
+# of the same name.
+# It should be sourced, not executed.
+# It reads the options/args description from stdin
+# and outputs a script which parses the command
+# line and performs some automatic checks.
+
+if [[ -n "${FUNCNAME[0]}" ]]
+then
+	BASH_OPTPARSE_IS_IN_FUNC="true"
+	exit_cmd="return"
+else
+	BASH_OPTPARSE_IS_IN_FUNC="false"
+	exit_cmd="exit"
+fi
+export BASH_OPTPARSE_IS_IN_FUNC
+
+export PYTHONPATH="/usr/lib/python3/dist-packages/bash_optparse:$PYTHONPATH"
+
+py_script_name="/usr/lib/python3/dist-packages/bash_optparse/bash_optparse.py"
+
+[[ -f "$py_script_name" ]] &> /dev/null || { echo "$(basename $0): error: python script $py_script_name not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+
+for req_command in getopt egrep gawk
+do
+	which "$req_command" &> /dev/null || { echo "$(basename $0): error: $req_command command not found" >> /dev/stderr; unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+done
+
+
+AUX_FUNCS="$(/usr/bin/python3 $py_script_name)"
+[[ $? -eq 0 ]] || { unset BASH_OPTPARSE_IS_IN_FUNC; $exit_cmd 1; }
+
+. <(echo "$AUX_FUNCS" && unset AUX_FUNCS)
+BASH_OPTPARSE_RETURN_VAL=$?
+
+unset BASH_OPTPARSE_IS_IN_FUNC
+
+[[ -n "${FUNCNAME[0]}" ]] && return $BASH_OPTPARSE_RETURN_VAL

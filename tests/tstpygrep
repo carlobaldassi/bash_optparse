@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function py_grep
+{
+	/usr/bin/env python -c "
+import re
+import sys
+
+regex = re.compile(sys.argv[1])
+line = sys.argv[2]
+
+if re.search(regex, line) != None:
+	sys.exit(0)
+else:
+	sys.exit(1)
+" "$1" "$2"
+}
+
+if py_grep 'accio' "$1"
+then
+	echo "si"
+else
+	echo "no"
+fi

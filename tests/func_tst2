@@ -1,0 +1,39 @@
+#!/bin/bash
+
+shopt -s expand_aliases
+alias BASH_OPTPARSE_BEGIN='. bop_use_local <<- BASH_OPTPARSE_END'
+alias bash_optparse_return='[[ $BASH_OPTPARSE_EARLY_RETURN == "true" ]] && return $BASH_OPTPARSE_RETURN_VAL'
+
+function wat
+{
+	BASH_OPTPARSE_BEGIN
+	  SETTINGS_BEGIN
+	    REQUIRED_VERSION 1.0
+	  SETTINGS_END
+	  
+	  DESCRIPTION_BEGIN
+	    WUT
+	  DESCRIPTION_END
+	  
+	  OPTIONS_BEGIN
+	    quality,q STRING q low|medium|high low "set quality"
+	    fast,f NONE NONE NONE NONE "faster algorithm"
+	    num,n INT n [0:10] 1 "number"
+	    BASH_OPTPARSE_e STRING x true|false true "combo breaker"
+	  OPTIONS_END
+	  
+	  ARGUMENTS_BEGIN
+	    @ True "input string"
+	  ARGUMENTS_END
+	  
+	BASH_OPTPARSE_END
+
+	bash_optparse_return
+
+	echo "quality = $quality"
+	echo "fast = $fast"
+
+	echo
+
+	echo "arg line = $@"
+}

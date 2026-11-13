@@ -1,0 +1,101 @@
+#!/bin/bash
+
+shopt -s expand_aliases
+
+alias BASH_OPTPARSE_BEGIN='source bop_use_local << BASH_OPTPARSE_END'
+
+. bop_use_local << BASH_OPTPARSE_END
+#BASH_OPTPARSE_BEGIN
+
+  SETTINGS_BEGIN
+    REQUIRED_VERSION "1.0"
+    WRAP_WIDTH "143"
+    AUTO_SHORT_OPTS TRUE
+    ERR_CODE_OPT_INVALID 4
+    ERR_CODE_OPT_TYPE 5
+    ERR_CODE_OPT_RANGE 6
+    ERR_CODE_ARG_NUM 7
+  SETTINGS_END
+
+  DESCRIPTION_BEGIN
+    dies iræ, dies illa
+    solvet sæculum in favilla :
+     teste David cum Sibilla! none
+   "" sdf None noNe "neon none\" " "  \
+	   sdf"
+    "waka wakat "
+    Print the most frèẌquent tree structure in the given range\\, \
+  ciao \
+    \
+  eh 
+    "waka waka eh eh"
+
+  # commen\
+	  t continued?
+
+    what "none" is this
+
+  DESCRIPTION_END
+
+  VERSION_BEGIN
+    test 0.1
+    test
+    Copyright (C) 2010 Waka \"waka\" eh eh
+  VERSION_END
+
+  OPTIONS_BEGIN
+
+  # NAME ARG_TYPE ARG_NAME ARG_RANGE DEFAULT DESC
+
+    aaa STRING a "one\\\\*" "one*" \
+	  "aaa"b"aaaaaa" \
+	  # sdf \
+	  # 234
+    ooo,- strIng type "low|high|sem|anim|semrand[A-J]" low "ooo"
+    cat STRING cat "low|sem|high|anim|semrand[A-J]" low "category"
+    out_mode,m \
+	    STRING mode" of operation""" "(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file" \
+     "te%t" "output mode"
+    str STRING+ s "a|b|c" NONE "pippo?"
+    num_nodes FLOAT N "[0.1:0.01: ]" " ""0.19 " "number of nodes"
+    num_notes INT+ N "(::[" NONE "number of nodes"
+    num_notez FLOAT N "]None:None: 400 ] " 248 "number of nodes"
+    num_jones FLOAT N "NONE" "NONE" "number of nodes"
+    gviz_overlap STRING type true|false true "Graphviz overlap type"
+    A STRING "NO""NE" NONE pollo "colour nodes using semantic info"
+    aoc INT w :: NONE "ouch"\"\"sdf" asd"
+    BASH_OPTPARSE_a NONE NONE NONE NONE NONE
+  OPTIONS_END
+
+  ARGUMENTS_BEGIN
+    infile tRUE "input file"
+    outfile True "output file"
+    test True "test"
+    help True "test"
+    @ "TRUE" "other args"
+  ARGUMENTS_END
+
+BASH_OPTPARSE_END
+
+#init_options out_mode
+
+echo "out_mode = $out_mode"
+echo "num_nodes = $num_nodes"
+echo "num_notes# = ${#num_notes[@]}"
+echo "num_notes = ${num_notes[@]}"
+echo "with_semantic = $with_semantic"
+echo "who = $who"
+echo "ooo = $ooo"
+
+echo
+
+echo "infile = $infile"
+echo "outfile = $outfile"
+echo "test = $test"
+
+echo
+
+echo "other args = $@"
+
+
+err_mess "this is an error message"

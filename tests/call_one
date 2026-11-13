@@ -1,0 +1,310 @@
+#!/bin/bash
+
+. bop_use_local <<- EOF
+SETTINGS_BEGIN
+  REQUIRED_VERSION 1.0
+SETTINGS_END
+
+DESCRIPTION_BEGIN
+  Wrapper script to generate reconstructed gene trees
+  from \"true\" gene trees by chaining rose, mafft, raxml.
+  Reads trees from standard input (phylip format, one per
+  line), outputs everything to <output directory>.
+DESCRIPTION_END
+
+
+OPTIONS_BEGIN
+
+# NAME        TYPE   ARG  RANGE             DEFAULT       DESC
+
+  seed        INT    s    [1:Inf)           1000          "random seed for rose"
+  gamma_seed  INT    s    [1:Inf)           1000          "random seed for gamma generator"
+  boot_seed   INT    s    [1:Inf)           1000          "random seed for RAxML bootstrapping"
+  seq_len,l   INT    l    [1:Inf)           1000          "sequence lenght"
+  PAM_type,y  STRING type nematode|sate     sate          "PAM matrix type"
+  PAM_time,t  FLOAT  t    (0:Inf)           0.001         "PAM matrix time"
+  gap_dist,d  STRING l    long|medium|short short         "Gap length distribution"
+  insdel_prob FLOAT  p    [0:Inf)           0.0000043     "Insertion/deletion probability"
+  boot_num    INT    N    [1:Inf)           100           "Number of replicae for RAxML bootstrapping"
+  disc_dist   NONE   NONE NONE              NONE          "discard distances in trees"
+  log_file,-  STRING file NONE              "/dev/stderr" "log file"
+
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+
+# NAME    MAND. PRINT_NAME
+  out_dir True  "output directory"
+
+ARGUMENTS_END
+EOF
+
+. clock_funcs
+
+function check_file
+{
+	[[ -f "$1" ]] || abort "file not found: $1"
+}
+
+function log_mess
+{
+	clock_update
+	echo "$(clock_print) $1" >> "$log_file"
+}
+
+gamma_gen_script="$(dirname $0)/gamma_gen.py"
+check_file "$gamma_gen_script"
+
+which rose &> /dev/null || abort "rose executable not found in path"
+
+which mafft &> /dev/null || abort "maffta executable not found in path"
+
+check_file "fasta_2_phylip.awk"
+
+which raxmlHPC &> /dev/null || abort "raxmlHPC executable not found in path"
+
+PAM_MATRIX_FILE="PAM_matrix-${PAM_type}-t_${PAM_time}.txt"
+check_file "$PAM_MATRIX_FILE"
+
+GAP_FILE="gap_distribution-${gap_dist}.txt"
+check_file "$GAP_FILE"
+
+touch "$log_file" || abort "cannot write log file: $log_file"
+
+#[[ -d "$out_dir" ]] && abort "output directory already exists, aborting"
+
+mkdir -p "$out_dir" || abort "cannot create output directory $out_dir"
+
+ark_rose_dir="${out_dir}/ark_rose"
+mkdir -p "$ark_rose_dir" || abort "cannot create output ark_rose directory $ark_rose_dir"
+
+ark_mafft_dir="${out_dir}/ark_mafft"
+mkdir -p "$ark_mafft_dir" || abort "cannot create output ark_mafft directory $ark_mafft_dir"
+
+ark_raxml_dir="${out_dir}/ark_raxml"
+mkdir -p "$ark_raxml_dir" || abort "cannot create output ark_raxml directory $ark_raxml_dir"
+
+
+
+function remove_dists
+{
+	if [[ "$disc_dist" == "true" ]]
+	then
+		sed "s/:\([[:digit:]]\+\(\.[[:digit:]]\)\?\|\.[[:digit:]]\+\)//g"
+	else
+		sed "s/:\([[:digit:]]\+\(\.[[:digit:]]\)\?\|\.[[:digit:]]\+\);/;/"
+	fi
+}
+
+function rename_taxa
+{
+	#tee "/dev/stderr" | \
+	sed "s/\([(,]\)\([[:digit:]]\+\)\([:,)]\)/\1T\2\3/g" | \
+	sed "s/\([(,]\)\([[:digit:]]\+\)\([:,)]\)/\1T\2\3/g" | \
+	sed "s/\([(,]\)Taxon_\([[:digit:]]\+\)\([:,)]\)/\1T\2\3/g" | \
+	sed "s/\([(,]\)Taxon_\([[:digit:]]\+\)\([:,)]\)/\1T\2\3/g";
+}
+
+function fasta_2_phylip
+{
+	awk -f fasta_2_phylip.awk
+}
+
+function call_rose
+{
+	local i="$1"
+	local raw_tree="$2"
+
+	rose_outlog="${out_dir}/rose_output.log"
+
+	THE_TREE="$(echo "$raw_tree" | remove_dists | rename_taxa)"
+	#echo "$THE_TREE" >> /dev/stderr
+	TAXA="$(echo "$THE_TREE" | sed "s/[();]//g;s/,/ /g;" | wc -w)"
+	OUTPUT="${out_dir}/rose_output"
+	outlist_nonaligned="${out_dir}/rose_outputs.nonaligned.txt"
+	#non_aligned_seqs="nonal_seqs.tmp"
+	#aligned_seqs="al_seqs.tmp"
+
+	log_mess "call rose"
+
+	rose - >> ${rose_outlog} 2>&1 <<- EOF
+	#cat <<- EOF
+	SeedVal = $seed
+	InputType = 4;
+	SequenceLen = $seq_len;
+	SequenceNum = $TAXA;
+	StdOut = False;
+	OutputFilebase = "$OUTPUT";
+	AlignmentFormat = "FASTA";
+	SequenceSuffix = ".$i.nonaligned.fa";
+	AlignmentSuffix = ".$i.aligned.fa";
+	TheTree = $THE_TREE
+	TheAlphabet = "ACGT";
+
+	#TheSequence = "AAAAAAAAAA";
+	
+	TheMutationProbability = $($gamma_gen_script --seed $gamma_seed --num $seq_len -l)
+	#TheMutationProbability = [$(for i in $(seq 1 $seq_len); do echo -n "1.0"; [[ $i != $seq_len ]] && echo -n ", "; done)];
+	
+	TheInsertThreshold = $insdel_prob
+	TheDeleteThreshold = $insdel_prob
+
+	%include $PAM_MATRIX_FILE
+	
+	%include $GAP_FILE
+
+	EOF
+
+	rm -f "${OUTPUT}.tree"
+
+	log_mess "rose done"
+
+	mv "$rose_outlog" "$OUTPUT.$i.aligned.fa" \
+		"$ark_rose_dir"
+
+	echo "$OUTPUT.$i.nonaligned.fa"
+}
+
+function call_mafft
+{
+	local alignment_file="$1"
+	check_file "$alignment_file"
+
+	work_dir="$(dirname "$alignment_file")"
+
+	mafft_outlog="${work_dir}/mafft_output.log"
+
+	output_file="${alignment_file%.nonaligned.fa}.mafft_aligned.fa"
+
+	log_mess "call mafft"
+	{ time mafft --maxiterate 1000 --localpair --quiet "$alignment_file" > "$output_file"; } &>> "$mafft_outlog"
+	log_mess "mafft_done"
+
+	mv "$alignment_file" \
+		"$ark_rose_dir"
+
+	mv "$mafft_outlog" \
+		"$ark_mafft_dir"
+
+	echo "$output_file"
+}
+
+function call_raxml
+{
+	local i="$1"
+	local alignment_file="$2"
+	local output_trees="$3"
+
+	check_file "$alignment_file"
+
+	work_dir="$(dirname "$alignment_file")"
+
+	raxml_outlog="${work_dir}/raxml_output.log"
+
+	ph_alignment_file="$(tempfile)"
+	trap "rm -f \"$ph_alignment_file\"" INT EXIT
+
+	#output_tree="$work_dir/RAxML_result.$i"
+	#output_ptree="$work_dir/RAxML_parsimonyTree.$i"
+
+	output_tree="$work_dir/RAxML_bipartitions.$i"
+	output_btree="$work_dir/RAxML_bestTree.$i"
+	output_bstree="$work_dir/RAxML_bootstrap.$i"
+	output_info="$work_dir/RAxML_info.$i"
+
+	log_mess "call raxml"
+
+	fasta_2_phylip < "$alignment_file" > "$ph_alignment_file"
+
+	#{ time raxmlHPC -m GTRMIX -w "$work_dir" -n "$i" -s  "$ph_alignment_file"; } &>> "${raxml_outlog}"
+	{ time raxmlHPC -m GTRMIX -w "$work_dir" -n "$i" -N $boot_num -x $boot_seed -f a -s  "$ph_alignment_file"; } &>> "${raxml_outlog}"
+	#echo "$alignment_file $output_file" >> "$output_list"
+	#cat "$output_tree" >> "$output_trees"
+	#cat "$output_ptree" >> "$output_ptrees"
+	#rm -f "$output_tree" "$output_ptree" > /dev/null
+
+	#bs_dir="$work_dir/bootstrap"
+#
+	#mkdir "$bs_dir"
+#
+	#{ time raxmlHPC -m GTRMIX -w "$bs_dir" -n "$i" -b $boot_seed -N $boot_num -s "$ph_alignment_file"; } &>> "${raxml_outlog}"
+
+	rm -f "$ph_alignment_file"
+
+	cat "$output_tree" >> "$output_trees"
+
+	mv "$alignment_file" \
+		"$ark_mafft_dir"
+
+	mv "$output_tree" "$output_btree" "$output_bstree" "$output_info" "$raxml_outlog" \
+	       "$ark_raxml_dir"
+
+	log_mess "raxml done"
+
+	#echo "$output_tree" "$output_ptree"
+	#echo "$output_tree"
+}
+
+function call_one
+{
+	local index="$1"
+	local raw_tree="$2"
+	local output_trees="$3"
+
+	local rose_outfile mafft_outfile raxml_outfile
+
+	rose_outfile="$(call_rose "$index" "$raw_tree")"
+
+	clock_update
+
+	mafft_outfile="$(call_mafft "$rose_outfile")"
+
+	clock_update
+
+	call_raxml "$index" "$mafft_outfile" "$output_trees"
+	#raxml_outfile="$(call_raxml "$index" "$mafft_outfile" "$output_trees")"
+
+	#clock_update
+}
+
+function call_compress
+{
+	log_mess "call compress"
+
+	cd "$out_dir"
+
+	for d in "$@"
+	do
+		d1="${d#$out_dir/}"
+		tar -cJf "${d1}.tar.xz" "$d1" && rm -fr "$d1"
+	done
+
+	cd "-" > /dev/null
+
+	log_mess "compress done"
+}
+
+function main
+{
+	local raxml_outfiles
+	local output_trees="${out_dir}/final_trees.txt"
+	#local output_btrees="${out_dir}/final_btrees.txt"
+
+	clock_start
+
+	index=1
+	while read raw_tree
+	do
+		log_mess "processing tree $index"
+		call_one $index "$raw_tree" "$output_trees"
+
+		let index++
+	done
+
+        call_compress "$ark_rose_dir" "$ark_mafft_dir" "$ark_raxml_dir"
+
+        log_mess "done"
+}
+
+main
+

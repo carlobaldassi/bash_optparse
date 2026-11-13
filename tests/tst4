@@ -1,0 +1,15 @@
+#!/bin/bash
+
+. bop_use_local << EOF
+SETTINGS_BEGIN
+  WRAP_WIDTH 60
+SETTINGS_END
+
+OPTIONS_BEGIN
+  perc FLOAT p [0:100] 50 "Select percentage"
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+  infile False "input file"
+ARGUMENTS_END
+EOF

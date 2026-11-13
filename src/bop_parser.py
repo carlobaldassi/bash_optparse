@@ -452,9 +452,9 @@ class Parser(object):
 		Prints out the bash check functions.
 		(These are required by print_check_optarg_block)
 		"""
-		outfile.write("function check_is_set { eval \"[[ \${#$1[@]} -gt 0 ]]\"; }\n")
+		outfile.write("function check_is_set { eval \"[[ ${#$1[@]} -gt 0 ]]\"; }\n")
 		outfile.write("function check_is_int { [[ -n \"$1\" ]] && echo \"$1\" | egrep -q \"^[-+]?[[:digit:]]+$\"; }\n")
-		outfile.write("function check_is_float { [[ -n \"$1\" ]] && echo \"$1\" | egrep -q \"^[-+]?([[:digit:]]+(\.[[:digit:]]*)?|\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?$\"; }\n")
+		outfile.write("function check_is_float { [[ -n \"$1\" ]] && echo \"$1\" | egrep -q \"^[-+]?([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?$\"; }\n")
 		outfile.write("\n")
 		outfile.write("function check_is_in_range\n")
 		outfile.write("{\n")

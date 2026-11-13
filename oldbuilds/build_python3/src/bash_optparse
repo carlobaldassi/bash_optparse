@@ -1,0 +1,91 @@
+# Bash optparse
+# Copyright (C) 2011 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the Licence, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org.licences/>.
+
+
+
+# This script is a wrapper to the python script
+# of the same name.
+# It should be sourced, not executed.
+# It reads the options/args description from stdin
+# and outputs a script which parses the command
+# line and performs some automatic checks.
+
+if [[ -n "${FUNCNAME[0]}" ]]
+then
+	local BASH_OPTPARSE_IS_IN_FUNC="true"
+	local BASH_OPTPARSE_EXIT_CMD="return"
+	local BASH_OPTPARSE_REQUIRED_COMMAND
+	local BASH_OPTPARSE_OUTPUT_SCRIPT
+	local BASH_OPTPARSE_PY_SCRIPT_NAME
+	local BASH_OPTPARSE_CMDNAME="${FUNCNAME[1]}"
+else
+	BASH_OPTPARSE_IS_IN_FUNC="false"
+	BASH_OPTPARSE_EXIT_CMD="exit"
+	BASH_OPTPARSE_CMDNAME="$(basename "$0")"
+fi
+export BASH_OPTPARSE_IS_IN_FUNC
+
+[[ -n "$BASH_OPTPARSE_ERR_CODE_MISSING_ITEM" ]] || BASH_OPTPARSE_ERR_CODE_MISSING_ITEM=10;
+[[ -n "$BASH_OPTPARSE_ERR_CODE_PARSING_FAILED" ]] || BASH_OPTPARSE_ERR_CODE_PARSING_FAILED=10;
+
+export PYTHONPATH="/usr/lib/python3/dist-packages/bash_optparse:$PYTHONPATH"
+
+BASH_OPTPARSE_PY_SCRIPT_NAME="/usr/lib/python3/dist-packages/bash_optparse/bash_optparse.py"
+
+[[ -f "$BASH_OPTPARSE_PY_SCRIPT_NAME" ]] &> /dev/null || {
+	echo "$BASH_OPTPARSE_CMDNAME: error: python script $BASH_OPTPARSE_PY_SCRIPT_NAME not found" >> /dev/stderr
+	unset BASH_OPTPARSE_IS_IN_FUNC
+	BASH_OPTPARSE_EARLY_RETURN="true"
+	BASH_OPTPARSE_RETURN_VAL=$BASH_OPTPARSE_ERR_CODE_MISSING_ITEM
+	$BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_MISSING_ITEM
+	}
+
+for BASH_OPTPARSE_REQUIRED_COMMAND in getopt egrep gawk
+do
+	which "$BASH_OPTPARSE_REQUIRED_COMMAND" &> /dev/null || {
+		echo "$BASH_OPTPARSE_CMDNAME: error: $BASH_OPTPARSE_REQUIRED_COMMAND command (required by bash_optparse) not found" >> /dev/stderr
+		unset BASH_OPTPARSE_IS_IN_FUNC
+		BASH_OPTPARSE_EARLY_RETURN="true"
+		BASH_OPTPARSE_RETURN_VAL=$BASH_OPTPARSE_ERR_CODE_MISSING_ITEM
+		$BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_MISSING_ITEM
+		}
+done
+
+
+BASH_OPTPARSE_OUTPUT_SCRIPT="$(/usr/bin/python3 $BASH_OPTPARSE_PY_SCRIPT_NAME)"
+[[ $? -eq 0 ]] || {
+	unset BASH_OPTPARSE_IS_IN_FUNC;
+	BASH_OPTPARSE_EARLY_RETURN="true"
+	BASH_OPTPARSE_RETURN_VAL=$BASH_OPTPARSE_ERR_CODE_PARSING_FAILED
+	$BASH_OPTPARSE_EXIT_CMD $BASH_OPTPARSE_ERR_CODE_PARSING_FAILED
+	}
+
+if [[ "$BASH_OPTPARSE_GENERATE_ONLY" == "true" ]]
+then
+	echo "$BASH_OPTPARSE_OUTPUT_SCRIPT"
+	unset BASH_OPTPARSE_IS_IN_FUNC
+	BASH_OPTPARSE_EARLY_RETURN="true"
+	BASH_OPTPARSE_RETURN_VAL=0
+	$BASH_OPTPARSE_EXIT_CMD 0
+fi
+
+. <(echo "$BASH_OPTPARSE_OUTPUT_SCRIPT")
+BASH_OPTPARSE_RETURN_VAL=$?
+
+unset BASH_OPTPARSE_IS_IN_FUNC BASH_OPTPARSE_OUTPUT_SCRIPT
+
+[[ -n "${FUNCNAME[0]}" ]] && return $BASH_OPTPARSE_RETURN_VAL

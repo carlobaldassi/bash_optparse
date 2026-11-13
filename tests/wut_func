@@ -1,0 +1,143 @@
+function usage
+{
+	cat << EOF
+Usage: ${FUNCNAME[1]} [options] <input string...>
+
+WUT
+
+Options:
+  -q, --quality <q>  set quality (<q>=string matching regex /low|medium|high/,
+                     default=low)
+  -f, --fast         faster algorithm
+  --version          output version information and exit
+  --help             print this help and exit
+EOF
+}
+
+function usage_brief
+{
+	cat << EOF
+Usage: ${FUNCNAME[1]} [options] <input string...>
+(Use ${FUNCNAME[1]} --help for more information.)
+EOF
+}
+
+function print_version
+{
+	cat << EOF
+Version information unspecified
+EOF
+}
+
+default_quality="low"
+default_fast="false"
+function err_mess { echo "${FUNCNAME[1]}: error: $1" >> /dev/stderr; }
+function abort { local outval="$2"; err_mess "$1"; [[ -n "$outval" ]] || outval=2; exit $outval; }
+
+function init_options { for opt in "$@"; do set_option_from_default "$opt"; done; }
+function set_option_from_default { eval "$1=\"\$default_$1\""; }
+
+function check_is_empty { eval "[[ -z \"\$$1\" ]]"; }
+function check_is_int { eval "[[ -n \"\$$1\" ]] && echo \"\$$1\" | egrep -q \"^[-+]?[[:digit:]]+\$\""; }
+function check_is_float { eval "[[ -n \"\$$1\" ]] && echo \"\$$1\" | egrep -q \"^[-+]?([[:digit:]]+(\.[[:digit:]]*)?|\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?\$\""; }
+
+function check_is_in_range
+{
+	eval "local x=\$$1"
+	local openlow="$2"
+	local lower="$3"
+	local step="$4"
+	local upper="$5"
+	local openup="$6"
+	local ol=0 ou=0
+	[[ "$openlow" == "(" ]] && ol=1
+	[[ "$openup" == ")" ]] && ou=1
+	[[ "$lower" != "-Inf" ]] && [[ "$(echo "$x" | gawk -v l=$lower -v o=$ol '($1 < l || ($1 == l && o == 1)) {print 1}')" == 1 ]] && return 1
+	[[ "$upper" != "Inf" ]] && [[ "$(echo "$x" | gawk -v u=$upper -v o=$ou '($1 > u || ($1 == u && o == 1)) {print 1}')" == 1 ]] && return 1
+	if [[ "$step" != "0" ]]
+	then
+		if echo "$x" | gawk -v l=$lower -v u=$upper -v s=$step \
+			'{
+				if (s > 0) {
+					d = ($1 - l)
+				} else {
+					d = (u - $1);
+					s = -s
+				}
+				r = d % (s * (1 - 1e-15))
+				if (r < 0) { r = -r }
+				if (r > d * 5e-15) {
+					exit 0
+				} else {
+					exit 1
+				}
+			}'
+		then
+			return 1
+		fi
+	fi
+	return 0
+}
+
+function bop_pygrep
+{
+	/usr/bin/python -c "
+import re
+import sys
+
+regex = re.compile(sys.argv[1])
+line = sys.argv[2]
+
+if re.search(regex, line) != None:
+	sys.exit(0)
+else:
+	sys.exit(1)
+" "$1" "$2"
+}
+
+init_options \
+	quality \
+	fast
+
+PARAMETERS=$(getopt -o "q:f" -l "version, help, quality:, fast" -- "$@")
+
+[ $? -ne 0 ] && { usage_brief; return 1; }
+
+eval set -- "$PARAMETERS"
+
+while true
+do
+	case "$1" in
+		-q|--quality)
+			quality="$2"
+			shift 2
+			;;
+		-f|--fast)
+			fast="true"
+			shift 1
+			;;
+		--)
+			shift
+			break
+			;;
+		--help)
+			usage
+			return 0
+			;;
+		--version)
+			print_version
+			return 0
+			;;
+		*)
+			usage_brief
+			return 1
+			;;
+	esac
+done
+
+[[ -n "$1" ]] || { err_mess "mandatory extra arguments required in the command line"; usage_brief; return 1; }
+
+if ! bop_pygrep '^(low|medium|high)$' "$quality"
+then
+	( abort "Invalid argument to option quality: $quality (must match regex: /low|medium|high/)" ) || return 2
+fi

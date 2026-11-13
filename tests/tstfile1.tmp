@@ -1,0 +1,12 @@
+DESCRIPTION "Print the most frequent tree structure in the given range"
+
+OPTION out_mode STRING mode "text|ps-file|ps-viewer|svg-file" "text" "output mode"
+OPTION num_nodes INT N "[-99999999999:2:5]" 3 "number of nodes"
+OPTION with_semantic "" "" "" "" "colour nodes using semantic info"
+OPTION whope STRING str "" "some text" "colour nodes using semantic info"
+
+ARGUMENT infile True "input file"
+ARGUMENT outfile True "output file"
+ARGUMENT test True "test"
+
+VARARG True "other args"

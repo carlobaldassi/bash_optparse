@@ -1,0 +1,322 @@
+Usage: example_script [options] <mandatory argument> [<optional argument>]
+  ...:    [<another optional argument>] [<extra optional args...>]
+
+This is just an example script. It takes some options, a mandatory argument and
+some optional ones.
+
+Options:
+  --string-option-1 <choice>  Example of constrained STRING option
+                              (<choice>=string
+                              matching regex
+                              /one|two|three|four/,
+                              default=one)
+  --string-option-2 <string>  Example of unconstrained STRING option
+                              (<string>=string,
+                              default=some text)
+  --int-option-1 <n>          Example of INT option (bounded, no step) (<n>=int
+                              in [-100:100],
+                              default=0)
+  --int-option-2 <n>          Example of INT option (odd, lower bounded)
+                              (<n>=int in
+                              [1:2:Inf),
+                              default=3)
+  --int-option-3 <n>          Example of INT option (even, upper bounded)
+                              (<n>=int in
+                              (-Inf:-2:10],
+                              default=6)
+  --float-option-1 <x>        Example of FLOAT option (<x>=float in [0.0:1.0),
+                              default=5e-1)
+  --float-option-2 <x>        Example of FLOAT option, same as above (<x>=float
+                              in [0.0:1.0),
+                              default=5e-1)
+  --float-option-3 <x>        Example of FLOAT option with step (<x>=float in
+                              [0.0:0.05:1.0),
+                              default=5e-1)
+  --flag-option               Example of a flag
+  --version                   output version number and exit
+  -h, --help                  print this help and exit
+Usage: tst2 [options] <input file> <output file> <test>
+  ...:    <other_args...>
+
+waka wakat Print the most frèẌquent tree structure in the given range,
+ciao  eh waka waka eh eh
+
+Options:
+  --aaa <a>              aaa (<a>=string matching regex /one\*/, default=one*)
+  --ooo <type>           ooo (<type>=string matching regex
+                         /low|high|sem|anim|semrand[A-J]/,
+                         default=low)
+  --cat <cat>            category (<cat>=string matching regex
+                         /low|sem|high|anim|semrand[A-J]/,
+                         default=low)
+  --out-mode <mode>      output mode (<mode>=string matching regex
+                         /(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file/,
+                         default=te%t)
+  --num-nodes <N>        number of nodes (<N>=float in [0.1:0.01:Inf),
+                         default=0.19)
+  --num-notes <N>        number of nodes (<N>=int in (-Inf:-2:501], default=233)
+  --num-notez <N>        number of nodes (<N>=float, default=248.9)
+  --gviz-overlap <type>  Graphviz overlap type (<type>=string in true/false,
+                         default=true)
+  --with-semantic        colour nodes using semantic info
+  --who <w>              ouch (<w>=float, no default value)
+  --version              output version number and exit
+  -h, --help             print this help and exit
+function usage
+{
+	cat << EOF
+Usage: $(basename $0) [options] <input file> <output file> <test>
+  ...:    <other_args...>
+
+waka wakat Print the most frèẌquent tree structure in the given range,
+ciao  eh waka waka eh eh
+
+Options:
+  --aaa <a>              aaa (<a>=string matching regex /one\*/, default=one*)
+  --ooo <type>           ooo (<type>=string matching regex
+                         /low|high|sem|anim|semrand[A-J]/,
+                         default=low)
+  --cat <cat>            category (<cat>=string matching regex
+                         /low|sem|high|anim|semrand[A-J]/,
+                         default=low)
+  --out-mode <mode>      output mode (<mode>=string matching regex
+                         /(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file/,
+                         default=te%t)
+  --num-nodes <N>        number of nodes (<N>=float in [0.1:0.01:Inf),
+                         default=0.19)
+  --num-notes <N>        number of nodes (<N>=int in (-Inf:-2:501], default=233)
+  --num-notez <N>        number of nodes (<N>=float, default=248.9)
+  --gviz-overlap <type>  Graphviz overlap type (<type>=string in true/false,
+                         default=true)
+  --with-semantic        colour nodes using semantic info
+  --who <w>              ouch (<w>=float, no default value)
+  --version              output version number and exit
+  -h, --help             print this help and exit
+EOF
+}
+
+function usage_brief
+{
+	cat << EOF
+Usage: $(basename $0) [options] <input file> <output file> <test>
+  ...:    <other_args...>
+(Use $(basename $0) --help for more information.)
+EOF
+}
+
+function print_version
+{
+	cat << EOF
+test 0.1
+test 
+Copyright (C) 2010 Waka "waka" eh eh
+EOF
+}
+
+default_aaa="one*"
+default_ooo="low"
+default_cat="low"
+default_out_mode="te%t"
+default_num_nodes="0.19"
+default_num_notes="233"
+default_num_notez="248.9"
+default_gviz_overlap="true"
+default_with_semantic="false"
+default_who=""
+function err_mess { echo "$(basename $0): error: $1" >> /dev/stderr; }
+function abort { local outval="$2"; err_mess "$1"; [[ -n "$outval" ]] || outval=2; exit $outval; }
+
+function init_options { for opt in "$@"; do set_option_from_default "$opt"; done; }
+function set_option_from_default { eval "$1=\"\$default_$1\""; }
+
+function check_is_empty { eval "[[ -z \"\$$1\" ]]"; }
+function check_is_int { eval "[[ -n \"\$$1\" ]] && echo \"\$$1\" | egrep -q \"^[-+]?[[:digit:]]+\$\""; }
+function check_is_float { eval "[[ -n \"\$$1\" ]] && echo \"\$$1\" | egrep -q \"^[-+]?([[:digit:]]+(\.[[:digit:]]*)?|\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?\$\""; }
+
+function check_is_in_range
+{
+	eval "local x=\$$1"
+	local openlow="$2"
+	local lower="$3"
+	local step="$4"
+	local upper="$5"
+	local openup="$6"
+	local ol=0 ou=0
+	[[ "$openlow" == "(" ]] && ol=1
+	[[ "$openup" == ")" ]] && ou=1
+	[[ "$lower" != "-Inf" ]] && [[ "$(echo "$x" | gawk -v l=$lower -v o=$ol '($1 < l || ($1 == l && o == 1)) {print 1}')" == 1 ]] && return 1
+	[[ "$upper" != "Inf" ]] && [[ "$(echo "$x" | gawk -v u=$upper -v o=$ou '($1 > u || ($1 == u && o == 1)) {print 1}')" == 1 ]] && return 1
+	if [[ "$step" != "0" ]]
+	then
+		if echo "$x" | gawk -v l=$lower -v u=$upper -v s=$step \
+			'{
+				if (s > 0) {
+					d = ($1 - l)
+				} else {
+					d = (u - $1);
+					s = -s
+				}
+				r = d % (s * (1 - 1e-15))
+				if (r < 0) { r = -r }
+				if (r > d * 5e-15) {
+					exit 0
+				} else {
+					exit 1
+				}
+			}'
+		then
+			return 1
+		fi
+	fi
+	return 0
+}
+
+function eg_pygrep
+{
+	/usr/bin/env python -c "
+import re
+import sys
+
+regex = re.compile(sys.argv[1])
+line = sys.argv[2]
+
+if re.search(regex, line) != None:
+	sys.exit(0)
+else:
+	sys.exit(1)
+" "$1" "$2"
+}
+
+init_options \
+	aaa \
+	ooo \
+	cat \
+	out_mode \
+	num_nodes \
+	num_notes \
+	num_notez \
+	gviz_overlap \
+	with_semantic \
+	who
+
+PARAMETERS=$(getopt -o "h" -l "version, help, aaa:, ooo:, cat:, out-mode:, num-nodes:, num-notes:, num-notez:, gviz-overlap:, with-semantic, who:" -- "$@")
+
+[ $? -ne 0 ] && { usage_brief; exit 1; }
+
+eval set -- "$PARAMETERS"
+
+while true
+do
+	case "$1" in
+		--aaa)
+			aaa="$2"
+			shift 2
+			;;
+		--ooo)
+			ooo="$2"
+			shift 2
+			;;
+		--cat)
+			cat="$2"
+			shift 2
+			;;
+		--out-mode)
+			out_mode="$2"
+			shift 2
+			;;
+		--num-nodes)
+			num_nodes="$2"
+			shift 2
+			;;
+		--num-notes)
+			num_notes="$2"
+			shift 2
+			;;
+		--num-notez)
+			num_notez="$2"
+			shift 2
+			;;
+		--gviz-overlap)
+			gviz_overlap="$2"
+			shift 2
+			;;
+		--with-semantic)
+			with_semantic="true"
+			shift 1
+			;;
+		--who)
+			who="$2"
+			shift 2
+			;;
+		--)
+			shift
+			break
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		--version)
+			print_version
+			exit 0
+			;;
+		*)
+			usage_brief
+			exit 1
+			;;
+	esac
+done
+
+[[ -n "$1" ]] || { err_mess "argument missing: input file"; usage_brief; exit 1; }
+infile="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "argument missing: output file"; usage_brief; exit 1; }
+outfile="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "argument missing: test"; usage_brief; exit 1; }
+test="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "mandatory extra arguments required in the command line"; usage_brief; exit 1; }
+
+if ! eg_pygrep '^(one\*)$' "$aaa"
+	then
+	abort "Invalid argument to option aaa: $aaa (must match regex: /one\*/)"
+fi
+
+if ! eg_pygrep '^(low|high|sem|anim|semrand[A-J])$' "$ooo"
+	then
+	abort "Invalid argument to option ooo: $ooo (must match regex: /low|high|sem|anim|semrand[A-J]/)"
+fi
+
+if ! eg_pygrep '^(low|sem|high|anim|semrand[A-J])$' "$cat"
+	then
+	abort "Invalid argument to option cat: $cat (must match regex: /low|sem|high|anim|semrand[A-J]/)"
+fi
+
+if ! eg_pygrep '^((te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file)$' "$out_mode"
+	then
+	abort "Invalid argument to option out-mode: $out_mode (must match regex: /(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file/)"
+fi
+
+check_is_float num_nodes || abort "Invalid argument to option num-nodes (should be a FLOAT): $num_nodes"
+
+check_is_in_range num_nodes "[" 0.1 0.01 Inf ")" || abort "out of range argument to option num-nodes: $num_nodes (range is [0.1:0.01:Inf))"
+
+check_is_int num_notes || abort "Invalid argument to option num-notes (should be an INT): $num_notes"
+
+check_is_in_range num_notes "(" -Inf -2 501 "]" || abort "out of range argument to option num-notes: $num_notes (range is (-Inf:-2:501])"
+
+check_is_float num_notez || abort "Invalid argument to option num-notez (should be a FLOAT): $num_notez"
+
+case "$gviz_overlap" in
+	"true"|"false")
+		;;
+	*)
+		abort "Invalid argument to option gviz-overlap: $gviz_overlap (allowed values: true, false)"
+		;;
+esac
+
+check_is_empty who || check_is_float who || abort "Invalid argument to option who (should be a FLOAT): $who"

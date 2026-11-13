@@ -1,0 +1,75 @@
+#!/bin/bash
+
+echo "INTST --- GENONLY: $BASH_OPTPARSE_GENERATE_ONLY" >> tmp.txt
+
+shopt -s expand_aliases
+#alias BASH_OPTPARSE_BEGIN='source ./bop_use_local << BASH_OPTPARSE_END'
+alias BASH_OPTPARSE_BEGIN='source bash_optparse << BASH_OPTPARSE_END'
+
+BASH_OPTPARSE_BEGIN
+SETTINGS_BEGIN
+  REQUIRED_VERSION 1.0
+  ONE_DASH_LONG_OPTS FALSE
+  AUTO_SHORT_OPTS TRUE
+  ERR_CODE_OPT_INVALID 4
+  ERR_CODE_OPT_TYPE 5
+  ERR_CODE_OPT_RANGE 6
+  ERR_CODE_ARG_NUM 7
+SETTINGS_END
+
+#ciao
+
+DESCRIPTION_BEGIN
+  "test test "#ciao
+  "Print the most frèẌquent tree structure in the given \"range\" "\
+  "ciao"
+DESCRIPTION_END
+
+VERSION_BEGIN
+  "test 0.1"
+  ""
+  "Copyright (C) 2011 TheTester"#ciao \
+  all \
+  this \
+  is \
+  still \
+  comment #
+VERSION_END
+
+# OPTION syntax:
+# OPTION name arg_type arg_name arg_range default_value description
+
+OPTIONS_BEGIN
+  out_mode \
+	STRING mode text|ps-file|ps-viewer|svg-file \
+	"text" "output mode"
+  with_semantic NONE NONE NONE TRUE "colour nodes using semantic info"
+  do_pollo,n|default_pollo,d NONE NONE NONE FALSE "pollo"
+OPTIONS_END
+
+ARGUMENTS_BEGIN
+  infile True "input file"
+  outfile True "output file"
+  test True "test" # whatever man
+  VARARGS True "other args"
+ARGUMENTS_END
+
+BASH_OPTPARSE_END
+
+#init_options out_mode
+
+echo "out_mode = $out_mode"
+echo "num_nodes = $num_nodes"
+echo "with_semantic = $with_semantic"
+echo "do_pollo = $do_pollo"
+
+echo
+
+echo "infile = $infile"
+echo "outfile = $outfile"
+echo "test = $test"
+
+echo
+
+echo "other args = $@"
+

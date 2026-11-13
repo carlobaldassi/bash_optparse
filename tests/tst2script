@@ -1,0 +1,315 @@
+function usage
+{
+	cat << EOF
+Usage: $(basename $0) [options] <input file> <output file> <test> <test> <other args...>
+
+dies iræ, dies illa solvet sæculum in favilla : teste David cum Sibilla! sdf neon none"          sdf waka wakat Print the most frèẌquent
+tree structure in the given range, ciao eh waka waka eh eh what none is this
+
+Options:
+  -a, --aaa <a>                       aaabaaaaaa (<a>=string matching regex /one\*/, default=one*)
+  --ooo <type>                        ooo (<type>=string matching regex /low|high|sem|anim|semrand[A-J]/, default=low)
+  -c, --cat <cat>                     category (<cat>=string matching regex /low|sem|high|anim|semrand[A-J]/, default=low)
+  -m, --out-mode <mode of operation>  output mode (<mode of operation>=string matching regex /(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file/,
+                                      default=te%t)
+  -s, --str <s>                       pippo? (<s>=string, default=pippo)
+  -n, --num-nodes <N>                 number of nodes (<N>=float in [0.1:0.01:INF), default=0.19)
+  -u, --num-notes <N>                 number of nodes (<N>=int, default=233) [this option may be given more than once]
+  -o, --num-notez <N>                 number of nodes (<N>=float in (-INF:400.0], default=248.9)
+  -j, --num-jones <N>                 number of nodes (<N>=float, no default value)
+  -g, --gviz-overlap <type>           Graphviz overlap type (<type>=string matching regex /true|false/, default=true)
+  -A <NONE>                           colour nodes using semantic info (<NONE>=string, default=pollo)
+  --aoc <w>                           ouch""sdf asd (<w>=int, no default value)
+  -B, --BASH-OPTPARSE-a
+  --version                           output version information and exit
+  --help                              print this help and exit
+EOF
+}
+
+function usage_brief
+{
+	cat << EOF
+Usage: $(basename $0) [options] <input file> <output file> <test> <test> <other args...>
+(Use $(basename $0) --help for more information.)
+EOF
+}
+
+function print_version
+{
+	cat << EOF
+test 0.1
+test
+Copyright (C) 2010 Waka "waka" eh eh
+EOF
+}
+
+BASH_OPTPARSE_EARLY_RETURN=false
+
+default_aaa="one*"
+default_ooo="low"
+default_cat="low"
+default_out_mode="te%t"
+default_str="pippo"
+default_num_nodes="0.19"
+default_num_notes="233"
+default_num_notez="248.9"
+default_num_jones=""
+default_gviz_overlap="true"
+default_A="pollo"
+default_aoc=""
+default_BASH_OPTPARSE_a="false"
+function err_mess { echo "$(basename $0): error: $1" >> /dev/stderr; }
+function abort { local outval="$2"; err_mess "$1"; [[ -n "$outval" ]] || outval=2; exit $outval; }
+
+function init_options { for opt in "$@"; do set_option_from_default "$opt"; done; }
+function init_array_options { for opt in "$@"; do set_option_from_default_if_null "$opt"; done; }
+function set_option_from_default { eval "$1=\"\$default_$1\""; }
+function set_option_from_default_if_null { eval "[[ \${#$1[@]} -eq 0 ]] && $1=\"\$default_$1\""; }
+
+function check_is_empty { [[ -z "$1" ]]; }
+function check_is_int { [[ -n "$1" ]] && echo "$1" | egrep -q "^[-+]?[[:digit:]]+$"; }
+function check_is_float { [[ -n "$1" ]] && echo "$1" | egrep -q "^[-+]?([[:digit:]]+(\.[[:digit:]]*)?|\.[[:digit:]]+)([eE][-+]?[[:digit:]]+)?$"; }
+
+function check_is_in_range
+{
+	local x="$1"
+	local openlow="$2"
+	local lower="$3"
+	local step="$4"
+	local upper="$5"
+	local openup="$6"
+	local ol=0 ou=0
+	[[ "$openlow" == "(" ]] && ol=1
+	[[ "$openup" == ")" ]] && ou=1
+	[[ "$lower" != "-INF" ]] && [[ "$(echo "$x" | gawk -v l=$lower -v o=$ol '($1 < l || ($1 == l && o == 1)) {print 1}')" == 1 ]] && return 1
+	[[ "$upper" != "INF" ]] && [[ "$(echo "$x" | gawk -v u=$upper -v o=$ou '($1 > u || ($1 == u && o == 1)) {print 1}')" == 1 ]] && return 1
+	if [[ "$step" != "0" ]]
+	then
+		if echo "$x" | gawk -v l=$lower -v u=$upper -v s=$step \
+			'{
+				if (s > 0) {
+					d = ($1 - l)
+				} else {
+					d = (u - $1);
+					s = -s
+				}
+				r = d % (s * (1 - 1e-15))
+				if (r < 0) { r = -r }
+				if (r > d * 5e-15) {
+					exit 0
+				} else {
+					exit 1
+				}
+			}'
+		then
+			return 1
+		fi
+	fi
+	return 0
+}
+
+function bop_pygrep
+{
+	/usr/bin/python -c "
+import re
+import sys
+
+regex = re.compile(sys.argv[1])
+line = sys.argv[2]
+
+if re.search(regex, line) != None:
+	sys.exit(0)
+else:
+	sys.exit(1)
+" "$1" "$2"
+}
+
+init_options \
+	aaa \
+	ooo \
+	cat \
+	out_mode \
+	str \
+	num_nodes \
+	num_notez \
+	num_jones \
+	gviz_overlap \
+	A \
+	aoc \
+	BASH_OPTPARSE_a
+
+PARAMETERS=$(getopt --name "$(basename $0)" -o "a:c:m:s:n:u:o:j:g:A:B" -l "version, help, aaa:, ooo:, cat:, out-mode:, str:, num-nodes:, num-notes:, num-notez:, num-jones:, gviz-overlap:, A:, aoc:, BASH-OPTPARSE-a" -- "$@")
+
+[ $? -ne 0 ] && { usage_brief; exit 4; }
+
+eval set -- "$PARAMETERS"
+
+while true
+do
+	case "$1" in
+		-a|--aaa)
+			aaa="$2"
+			shift 2
+			;;
+		--ooo)
+			ooo="$2"
+			shift 2
+			;;
+		-c|--cat)
+			cat="$2"
+			shift 2
+			;;
+		-m|--out-mode)
+			out_mode="$2"
+			shift 2
+			;;
+		-s|--str)
+			str="$2"
+			shift 2
+			;;
+		-n|--num-nodes)
+			num_nodes="$2"
+			shift 2
+			;;
+		-u|--num-notes)
+			num_notes[${#num_notes[@]}]="$2"
+			shift 2
+			;;
+		-o|--num-notez)
+			num_notez="$2"
+			shift 2
+			;;
+		-j|--num-jones)
+			num_jones="$2"
+			shift 2
+			;;
+		-g|--gviz-overlap)
+			gviz_overlap="$2"
+			shift 2
+			;;
+		-A)
+			A="$2"
+			shift 2
+			;;
+		--aoc)
+			aoc="$2"
+			shift 2
+			;;
+		-B|--BASH-OPTPARSE-a)
+			BASH_OPTPARSE_a="true"
+			shift 1
+			;;
+		--)
+			shift
+			break
+			;;
+		--help)
+			usage
+			exit 0
+			;;
+		--version)
+			print_version
+			exit 0
+			;;
+		*)
+			usage_brief
+			exit 4
+			;;
+	esac
+done
+
+[[ -n "$1" ]] || { err_mess "argument missing: input file"; usage_brief; exit 7; }
+infile="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "argument missing: output file"; usage_brief; exit 7; }
+outfile="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "argument missing: test"; usage_brief; exit 7; }
+test="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "argument missing: test"; usage_brief; exit 7; }
+help="$1"
+shift
+
+[[ -n "$1" ]] || { err_mess "mandatory extra arguments required in the command line"; usage_brief; exit 7; }
+
+init_array_options \
+	num_notes
+
+for BASH_OPTPARSE_AUXVAR in "${aaa[@]}";
+do
+	if ! bop_pygrep '^(one\*)$' "$BASH_OPTPARSE_AUXVAR"
+	then
+		abort "Invalid argument to option aaa: $BASH_OPTPARSE_AUXVAR (must match regex: /one\*/)" 6
+	fi
+done
+
+for BASH_OPTPARSE_AUXVAR in "${ooo[@]}";
+do
+	if ! bop_pygrep '^(low|high|sem|anim|semrand[A-J])$' "$BASH_OPTPARSE_AUXVAR"
+	then
+		abort "Invalid argument to option ooo: $BASH_OPTPARSE_AUXVAR (must match regex: /low|high|sem|anim|semrand[A-J]/)" 6
+	fi
+done
+
+for BASH_OPTPARSE_AUXVAR in "${cat[@]}";
+do
+	if ! bop_pygrep '^(low|sem|high|anim|semrand[A-J])$' "$BASH_OPTPARSE_AUXVAR"
+	then
+		abort "Invalid argument to option cat: $BASH_OPTPARSE_AUXVAR (must match regex: /low|sem|high|anim|semrand[A-J]/)" 6
+	fi
+done
+
+for BASH_OPTPARSE_AUXVAR in "${out_mode[@]}";
+do
+	if ! bop_pygrep '^((te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file)$' "$BASH_OPTPARSE_AUXVAR"
+	then
+		abort "Invalid argument to option out-mode: $BASH_OPTPARSE_AUXVAR (must match regex: /(te|et).[a-z]?|ps-(file|viewer)|(svg|ps)-file/)" 6
+	fi
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_nodes[@]}";
+do
+	check_is_float "$BASH_OPTPARSE_AUXVAR" || abort "Invalid argument to option num-nodes (should be a FLOAT): $BASH_OPTPARSE_AUXVAR" 5
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_nodes[@]}";
+do
+	check_is_in_range "$BASH_OPTPARSE_AUXVAR" "[" 0.1 0.01 INF ")" || abort "out of range argument to option num-nodes: $BASH_OPTPARSE_AUXVAR (range is [0.1:0.01:INF))" 6
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_notes[@]}";
+do
+	check_is_int "$BASH_OPTPARSE_AUXVAR" || abort "Invalid argument to option num-notes (should be an INT): $BASH_OPTPARSE_AUXVAR" 5
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_notez[@]}";
+do
+	check_is_float "$BASH_OPTPARSE_AUXVAR" || abort "Invalid argument to option num-notez (should be a FLOAT): $BASH_OPTPARSE_AUXVAR" 5
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_notez[@]}";
+do
+	check_is_in_range "$BASH_OPTPARSE_AUXVAR" "(" -INF 0 400.0 "]" || abort "out of range argument to option num-notez: $BASH_OPTPARSE_AUXVAR (range is (-INF:400.0])" 6
+done
+
+for BASH_OPTPARSE_AUXVAR in "${num_jones[@]}";
+do
+	check_is_empty "$BASH_OPTPARSE_AUXVAR" || check_is_float "$BASH_OPTPARSE_AUXVAR" || abort "Invalid argument to option num-jones (should be a FLOAT): $BASH_OPTPARSE_AUXVAR" 5
+done
+
+for BASH_OPTPARSE_AUXVAR in "${gviz_overlap[@]}";
+do
+	if ! bop_pygrep '^(true|false)$' "$BASH_OPTPARSE_AUXVAR"
+	then
+		abort "Invalid argument to option gviz-overlap: $BASH_OPTPARSE_AUXVAR (must match regex: /true|false/)" 6
+	fi
+done
+
+for BASH_OPTPARSE_AUXVAR in "${aoc[@]}";
+do
+	check_is_empty "$BASH_OPTPARSE_AUXVAR" || check_is_int "$BASH_OPTPARSE_AUXVAR" || abort "Invalid argument to option aoc (should be an INT): $BASH_OPTPARSE_AUXVAR" 5
+done

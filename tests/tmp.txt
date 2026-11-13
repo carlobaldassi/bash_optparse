@@ -1,0 +1,14 @@
+>>> FUNCNAME=source main ... 0
+>>> GENERATE ONLY: 
+>>> GENERATE ONLY: 
+>>> GENERATE ONLY: 
+<<<>>> GENONLY: true
+<<<>>> EXECUTING: wat
+>>> FUNCNAME=source wat main ... 3
+>>> GENERATE ONLY: true
+>>> GENERATE ONLY: true
+>>> GENERATE ONLY: true
+<<<>>> GENONLY: true
+<<<>>> EXECUTING: wat
+<<<>>> GENONLY: true
+<<<>>> EXECUTING: wat

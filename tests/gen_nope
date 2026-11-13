@@ -1,0 +1,16 @@
+#!/bin/bash
+
+function nope
+{
+    echo "{ echo \"NOPE\"; export BOPER=1; return 1; echo \"EPON\"; }"
+    #echo "echo \"NOPE\"; exit 1; echo \"EPON\";"
+}
+
+RR=$(nope)
+
+. <(echo "$RR")
+RV=$?
+
+unset RR
+
+return $RV
