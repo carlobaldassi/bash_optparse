@@ -3,8 +3,8 @@
 bash_optparse_return='[[ $BASH_OPTPARSE_EARLY_RETURN == "true" ]] && return $BASH_OPTPARSE_RETURN_VAL'
 
 shopt -s expand_aliases
-#alias BASH_OPTPARSE_BEGIN='source ./bop_use_local <<- BASH_OPTPARSE_END'
-alias BASH_OPTPARSE_BEGIN='source bash_optparse <<- BASH_OPTPARSE_END'
+alias BASH_OPTPARSE_BEGIN='source ./bop_use_local <<- BASH_OPTPARSE_END'
+# alias BASH_OPTPARSE_BEGIN='source bash_optparse <<- BASH_OPTPARSE_END'
 
 
 function wat

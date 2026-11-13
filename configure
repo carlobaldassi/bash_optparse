@@ -696,12 +696,9 @@ AM_BACKSLASH
 AM_DEFAULT_VERBOSITY
 AM_DEFAULT_V
 AM_V
-<<<<<<< HEAD
-=======
 CSCOPE
 ETAGS
 CTAGS
->>>>>>> python3
 am__untar
 am__tar
 AMTAR
@@ -772,12 +769,9 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_silent_rules
-<<<<<<< HEAD
-=======
 with_python_sys_prefix
 with_python_prefix
 with_python_exec_prefix
->>>>>>> python3
 enable_maintainer_mode
 '
       ac_precious_vars='build_alias
@@ -1413,8 +1407,6 @@ Optional Features:
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
-<<<<<<< HEAD
-=======
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1424,7 +1416,6 @@ Optional Packages:
   --with-python_prefix    override the default PYTHON_PREFIX
   --with-python_exec_prefix
                           override the default PYTHON_EXEC_PREFIX
->>>>>>> python3
 
 Some influential environment variables:
   PYTHON      the Python interpreter
@@ -1988,39 +1979,7 @@ BOP_MICRO_VERSION=0unstable-python3
 
 
 
-<<<<<<< HEAD
-am__api_version='1.14'
-
-ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
-  if test -f "$ac_dir/install-sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install-sh -c"
-    break
-  elif test -f "$ac_dir/install.sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install.sh -c"
-    break
-  elif test -f "$ac_dir/shtool"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/shtool install -c"
-    break
-  fi
-done
-if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
-fi
-
-# These three variables are undocumented and unsupported,
-# and are intended to be withdrawn in a future Autoconf release.
-# They can cause serious problems if a builder's source tree is in a directory
-# whose full name contains unusual characters.
-ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
-ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
-ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
-=======
 am__api_version='1.16'
->>>>>>> python3
 
 
 
@@ -2122,13 +2081,8 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether build environment is sane" >&5
-$as_echo_n "checking whether build environment is sane... " >&6; }
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether build environment is sane" >&5
 printf %s "checking whether build environment is sane... " >&6; }
->>>>>>> python3
 # Reject unsafe characters in $srcdir or the absolute working directory
 # name.  Accept space and tab only in the latter.
 am_lf='
@@ -2182,13 +2136,8 @@ else
    as_fn_error $? "newly created file is older than distributed files!
 Check your system clock" "$LINENO" 5
 fi
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
->>>>>>> python3
 # If we didn't sleep, we still need to ensure time stamps of config.status and
 # generated files are strictly newer.
 am_sleep_pid=
@@ -2222,13 +2171,8 @@ if eval "$MISSING --is-lightweight"; then
   am_missing_run="$MISSING "
 else
   am_missing_run=
-<<<<<<< HEAD
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: 'missing' script is too old or missing" >&5
-$as_echo "$as_me: WARNING: 'missing' script is too old or missing" >&2;}
-=======
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: 'missing' script is too old or missing" >&5
 printf "%s\n" "$as_me: WARNING: 'missing' script is too old or missing" >&2;}
->>>>>>> python3
 fi
 
 if test x"${install_sh+set}" != xset; then
@@ -2395,13 +2339,8 @@ fi
     MKDIR_P="$ac_install_sh -d"
   fi
 fi
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MKDIR_P" >&5
-$as_echo "$MKDIR_P" >&6; }
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MKDIR_P" >&5
 printf "%s\n" "$MKDIR_P" >&6; }
->>>>>>> python3
 
 for ac_prog in gawk mawk nawk awk
 do
@@ -2492,12 +2431,8 @@ fi
 rmdir .tst 2>/dev/null
 
 # Check whether --enable-silent-rules was given.
-<<<<<<< HEAD
-if test "${enable_silent_rules+set}" = set; then :
-=======
 if test ${enable_silent_rules+y}
 then :
->>>>>>> python3
   enableval=$enable_silent_rules;
 fi
 
@@ -2507,14 +2442,6 @@ case $enable_silent_rules in # (((
     *) AM_DEFAULT_VERBOSITY=1;;
 esac
 am_make=${MAKE-make}
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $am_make supports nested variables" >&5
-$as_echo_n "checking whether $am_make supports nested variables... " >&6; }
-if ${am_cv_make_support_nested_variables+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if $as_echo 'TRUE=$(BAR$(V))
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $am_make supports nested variables" >&5
 printf %s "checking whether $am_make supports nested variables... " >&6; }
 if test ${am_cv_make_support_nested_variables+y}
@@ -2522,7 +2449,6 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
   if printf "%s\n" 'TRUE=$(BAR$(V))
->>>>>>> python3
 BAR0=false
 BAR1=true
 V=1
@@ -2534,13 +2460,8 @@ else
   am_cv_make_support_nested_variables=no
 fi
 fi
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_make_support_nested_variables" >&5
-$as_echo "$am_cv_make_support_nested_variables" >&6; }
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $am_cv_make_support_nested_variables" >&5
 printf "%s\n" "$am_cv_make_support_nested_variables" >&6; }
->>>>>>> python3
 if test $am_cv_make_support_nested_variables = yes; then
     AM_V='$(V)'
   AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
@@ -2593,21 +2514,12 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-<<<<<<< HEAD
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
-mkdir_p='$(MKDIR_P)'
-
-# We need awk for the "check" target.  The system "awk" is bad on
-# some platforms.
-=======
 # <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
 # <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
 # system "awk" is bad on some platforms.
->>>>>>> python3
 # Always define AMTAR for backward compatibility.  Yes, it's still used
 # in the wild :-(  We should find a proper way to deprecate it ...
 AMTAR='$${TAR-tar}'
@@ -2680,49 +2592,6 @@ END
 fi
 
 
-# POSIX will say in a future version that running "rm -f" with no argument
-# is OK; and we want to be able to make that assumption in our Makefile
-# recipes.  So use an aggressive probe to check that the usage we want is
-# actually supported "in the wild" to an acceptable degree.
-# See automake bug#10828.
-# To make any issue more visible, cause the running configure to be aborted
-# by default if the 'rm' program in use doesn't match our expectations; the
-# user can still override this though.
-if rm -f && rm -fr && rm -rf; then : OK; else
-  cat >&2 <<'END'
-Oops!
-
-Your 'rm' program seems unable to run without file operands specified
-on the command line, even when the '-f' option is present.  This is contrary
-to the behaviour of most rm programs out there, and not conforming with
-the upcoming POSIX standard: <http://austingroupbugs.net/view.php?id=542>
-
-Please tell bug-automake@gnu.org about your system, including the value
-of your $PATH and any error possibly output before this message.  This
-can help us improve future automake versions.
-
-END
-  if test x"$ACCEPT_INFERIOR_RM_PROGRAM" = x"yes"; then
-    echo 'Configuration will proceed anyway, since you have set the' >&2
-    echo 'ACCEPT_INFERIOR_RM_PROGRAM variable to "yes"' >&2
-    echo >&2
-  else
-    cat >&2 <<'END'
-Aborting the configuration process, to ensure you take notice of the issue.
-
-You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
-
-If you want to complete the configuration process using your problematic
-'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
-to "yes", and re-run configure.
-
-END
-    as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
-  fi
-fi
-
-
 
 
 
@@ -2731,13 +2600,8 @@ fi
 
         if test -n "$PYTHON"; then
       # If the user set $PYTHON, use it and don't search something else.
-<<<<<<< HEAD
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $PYTHON version is >= 2.7" >&5
-$as_echo_n "checking whether $PYTHON version is >= 2.7... " >&6; }
-=======
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $PYTHON version is >= 3.0" >&5
 printf %s "checking whether $PYTHON version is >= 3.0... " >&6; }
->>>>>>> python3
       prog="import sys
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
@@ -2751,14 +2615,6 @@ sys.exit(sys.hexversion < minverhex)"
    ($PYTHON -c "$prog") >&5 2>&5
    ac_status=$?
    echo "$as_me:$LINENO: \$? = $ac_status" >&5
-<<<<<<< HEAD
-   (exit $ac_status); }; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-=======
    (exit $ac_status); }
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -2766,7 +2622,6 @@ printf "%s\n" "yes" >&6; }
 else $as_nop
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
->>>>>>> python3
 			       as_fn_error $? "Python interpreter is too old" "$LINENO" 5
 fi
       am_display_PYTHON=$PYTHON
@@ -2780,11 +2635,7 @@ then :
   printf %s "(cached) " >&6
 else $as_nop
 
-<<<<<<< HEAD
-	for am_cv_pathless_PYTHON in python python2 python3 python3.3 python3.2 python3.1 python3.0 python2.7  python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 none; do
-=======
 	for am_cv_pathless_PYTHON in python python2 python3  python3.11 python3.10  python3.9 python3.8 python3.7 python3.6 python3.5 python3.4 python3.3  python3.2 python3.1 python3.0  python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1  python2.0 none; do
->>>>>>> python3
 	  test "$am_cv_pathless_PYTHON" = none && break
 	  prog="import sys
 # split strings by '.' and convert to numeric.  Append some zeros
@@ -2891,52 +2742,6 @@ printf "%s\n" "$am_cv_python_platform" >&6; }
   PYTHON_PLATFORM=$am_cv_python_platform
 
 
-<<<<<<< HEAD
-  # Just factor out some code duplication.
-  am_python_setup_sysconfig="\
-import sys
-# Prefer sysconfig over distutils.sysconfig, for better compatibility
-# with python 3.x.  See automake bug#10227.
-try:
-    import sysconfig
-except ImportError:
-    can_use_sysconfig = 0
-else:
-    can_use_sysconfig = 1
-# Can't use sysconfig in CPython 2.7, since it's broken in virtualenvs:
-# <https://github.com/pypa/virtualenv/issues/118>
-try:
-    from platform import python_implementation
-    if python_implementation() == 'CPython' and sys.version[:3] == '2.7':
-        can_use_sysconfig = 0
-except ImportError:
-    pass"
-
-
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON script directory" >&5
-$as_echo_n "checking for $am_display_PYTHON script directory... " >&6; }
-if ${am_cv_python_pythondir+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$prefix" = xNONE
-     then
-       am_py_prefix=$ac_default_prefix
-     else
-       am_py_prefix=$prefix
-     fi
-     am_cv_python_pythondir=`$PYTHON -c "
-$am_python_setup_sysconfig
-if can_use_sysconfig:
-    sitedir = sysconfig.get_path('purelib', vars={'base':'$am_py_prefix'})
-else:
-    from distutils import sysconfig
-    sitedir = sysconfig.get_python_lib(0, 0, prefix='$am_py_prefix')
-sys.stdout.write(sitedir)"`
-     case $am_cv_python_pythondir in
-     $am_py_prefix*)
-       am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
-       am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
-=======
                             if test "x$prefix" = xNONE; then
     am__usable_prefix=$ac_default_prefix
   else
@@ -2985,7 +2790,6 @@ printf "%s\n" "$am_cv_python_prefix" >&6; }
      $am__usable_prefix*)
        am__strip_prefix=`echo "$am__usable_prefix" | sed 's|.|.|g'`
        am_python_prefix_subst=`echo "$am_cv_python_prefix" | sed "s,^$am__strip_prefix,\\${prefix},"`
->>>>>>> python3
        ;;
      *)
        am_python_prefix_subst=$am_cv_python_prefix
@@ -3145,40 +2949,6 @@ printf "%s\n" "$am_cv_python_pythondir" >&6; }
           pkgpythondir=\${pythondir}/$PACKAGE
 
 
-<<<<<<< HEAD
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON extension module directory" >&5
-$as_echo_n "checking for $am_display_PYTHON extension module directory... " >&6; }
-if ${am_cv_python_pyexecdir+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$exec_prefix" = xNONE
-     then
-       am_py_exec_prefix=$am_py_prefix
-     else
-       am_py_exec_prefix=$exec_prefix
-     fi
-     am_cv_python_pyexecdir=`$PYTHON -c "
-$am_python_setup_sysconfig
-if can_use_sysconfig:
-    sitedir = sysconfig.get_path('platlib', vars={'platbase':'$am_py_prefix'})
-else:
-    from distutils import sysconfig
-    sitedir = sysconfig.get_python_lib(1, 0, prefix='$am_py_prefix')
-sys.stdout.write(sitedir)"`
-     case $am_cv_python_pyexecdir in
-     $am_py_exec_prefix*)
-       am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
-       am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
-       ;;
-     *)
-       case $am_py_exec_prefix in
-         /usr|/System*) ;;
-         *)
-	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
-	   ;;
-       esac
-       ;;
-=======
           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON extension module directory (pyexecdir)" >&5
 printf %s "checking for $am_display_PYTHON extension module directory (pyexecdir)... " >&6; }
 if test ${am_cv_python_pyexecdir+y}
@@ -3216,7 +2986,6 @@ sys.stdout.write(sitedir)"`
        /usr|/System*) ;;
        *) am_cv_python_pyexecdir="\${PYTHON_EXEC_PREFIX}/lib/python$PYTHON_VERSION/site-packages"
           ;;
->>>>>>> python3
      esac
      ;;
    esac
@@ -3698,24 +3467,14 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
-<<<<<<< HEAD
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
-$as_echo_n "checking that generated files are newer than configure... " >&6; }
-=======
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
 printf %s "checking that generated files are newer than configure... " >&6; }
->>>>>>> python3
    if test -n "$am_sleep_pid"; then
      # Hide warnings about reused PIDs.
      wait $am_sleep_pid 2>/dev/null
    fi
-<<<<<<< HEAD
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: done" >&5
-$as_echo "done" >&6; }
-=======
    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: done" >&5
 printf "%s\n" "done" >&6; }
->>>>>>> python3
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.

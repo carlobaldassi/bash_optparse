@@ -81,9 +81,6 @@ else
 fi
 
 echo -n "checking for automake >= $AUTOMAKE_REQUIRED_VERSION ... "
-<<<<<<< HEAD
-if (automake-1.14 --version) < /dev/null > /dev/null 2>&1; then
-=======
 if (automake-1.16 --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake-1.16
    ACLOCAL=aclocal-1.16
@@ -91,7 +88,6 @@ elif (automake-1.15 --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake-1.15
    ACLOCAL=aclocal-1.15
 elif (automake-1.14 --version) < /dev/null > /dev/null 2>&1; then
->>>>>>> python3
    AUTOMAKE=automake-1.14
    ACLOCAL=aclocal-1.14
 elif (automake-1.13 --version) < /dev/null > /dev/null 2>&1; then
